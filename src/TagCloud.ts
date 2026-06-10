@@ -331,29 +331,29 @@ export class TagCloud {
       }
     }
 
-    const { rotY, rotX } = this.#toEuler();
-    const sinA = Math.sin((rotX * Math.PI) / 180);
-    const cosA = Math.cos((rotX * Math.PI) / 180);
-    const sinB = Math.sin((rotY * Math.PI) / 180);
-    const cosB = Math.cos((rotY * Math.PI) / 180);
+    // 直接用四元数构造 3×3 旋转矩阵 / build 3×3 rotation matrix directly from quaternion
+    const { w, x, y, z } = this.#qNow;
+    const [m00, m01, m02] = [1 - 2 * (y * y + z * z), 2 * (x * y - w * z), 2 * (x * z + w * y)];
+    const [m10, m11, m12] = [2 * (x * y + w * z), 1 - 2 * (x * x + z * z), 2 * (y * z - w * x)];
+    const [m20, m21, m22] = [2 * (x * z - w * y), 2 * (y * z + w * x), 1 - 2 * (x * x + y * y)];
 
     const d2 = this.#depth * 2;
     const projected: TagData[] = [];
 
     for (const p of this.#points) {
-      const y1 = p.y * cosA + p.z * -sinA;
-      const z1 = p.y * sinA + p.z * cosA;
-      const x2 = p.x * cosB + z1 * sinB;
-      const z2 = z1 * cosB - p.x * sinB;
+      // 四元数旋转矩阵 × 点 / quaternion rotation matrix × point
+      const rx = m00 * p.x + m01 * p.y + m02 * p.z;
+      const ry = m10 * p.x + m11 * p.y + m12 * p.z;
+      const rz = m20 * p.x + m21 * p.y + m22 * p.z;
 
-      const per = d2 / (d2 + z2);
+      const per = d2 / (d2 + rz);
       const alpha = Math.min(1, Math.max(0, per * per - 0.25));
 
       projected.push({
         text: p.text,
-        x: cx + x2 * per,
-        y: cy + y1 * per,
-        z: z2,
+        x: cx + rx * per,
+        y: cy + ry * per,
+        z: rz,
         scale: per,
         alpha,
       });

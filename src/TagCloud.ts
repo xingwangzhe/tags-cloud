@@ -351,6 +351,17 @@ export class TagCloud {
       this.#ctx = c.getContext("2d")!;
       this.#resizeCanvas();
     }
+    // 初始化 DOM overlay
+    if (!this.#overlay) {
+      this.#container.style.position = "relative";
+      const o = document.createElement("div");
+      o.style.position = "absolute";
+      o.style.inset = "0";
+      o.style.pointerEvents = "none";
+      o.style.overflow = "hidden";
+      this.#container.appendChild(o);
+      this.#overlay = o;
+    }
     const { width, height } = this.#canvas.getBoundingClientRect();
     const ctx = this.#ctx!;
     ctx.clearRect(0, 0, width, height);

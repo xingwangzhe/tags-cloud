@@ -38,8 +38,14 @@ export interface TagCloudOptions {
   autoSpeed?: number;
   /** 反转方向 / reverse direction (default false) */
   reverse?: boolean;
-  /** 每帧渲染回调 / render callback each frame */
-  onRender: (tags: TagData[]) => void;
+  /** 字体 / font family (default "system-ui, sans-serif") */
+  fontFamily?: string;
+  /** 基础字号（px）/ base font size in px (default 14) */
+  fontSize?: number;
+  /** 文字颜色 / text color (default "#ffffff") */
+  color?: string;
+  /** 自定义渲染回调（如不提供则用内置 Canvas）/ custom render callback (built-in Canvas if omitted) */
+  onRender?: (tags: TagData[]) => void;
 }
 
 // ── 内部类型 / Internal Types ──
@@ -51,17 +57,22 @@ interface SpherePoint {
   text: string;
 }
 
-const DEFAULTS = {
+type ResolvedOptions = TagCloudOptions & Required<Omit<TagCloudOptions, "onRender">>;
+
+const DEFAULTS: Omit<ResolvedOptions, "tags" | "onRender"> = {
   radius: 300,
-  mode: "both" as TagCloudMode,
+  mode: "both",
   autoSpeed: 0.15,
   reverse: false,
+  fontFamily: "system-ui, sans-serif",
+  fontSize: 14,
+  color: "#ffffff",
 };
 
 // ── 主类 / Main Class ──
 
 export class TagCloud {
-  #opts: TagCloudOptions & typeof DEFAULTS;
+  #opts: ResolvedOptions;
   #points: SpherePoint[] = [];
   #radius: number;
   #depth: number;
@@ -69,28 +80,74 @@ export class TagCloud {
   // 旋转状态 / rotation state
   #rotY = 0;
   #rotX = 0;
-  #velY = 0; // 拖拽惯性 / drag inertia
+  #velY = 0;
   #velX = 0;
   #paused = false;
 
   // 拖拽状态 / arcball drag state
   #dragging = false;
-  #dragPrev = { x: 0, y: 0, z: 0 }; // 上一帧的球面 3D 抓取点
+  #dragPrev = { x: 0, y: 0, z: 0 };
 
   // 动画 / animation
   #raf = 0;
   #container: HTMLElement;
   #handlers!: { down: EventListener; move: EventListener; up: EventListener };
 
+  // 内置 Canvas（仅当 onRender 未提供时创建）/ built-in Canvas (only when onRender is not provided)
+  #canvas?: HTMLCanvasElement;
+  #ctx?: CanvasRenderingContext2D;
+
   constructor(container: HTMLElement, options: TagCloudOptions) {
     this.#container = container;
-    this.#opts = { ...DEFAULTS, ...options };
+    this.#opts = { ...DEFAULTS, ...options } as ResolvedOptions;
     this.#radius = this.#opts.radius;
     this.#depth = 2 * this.#radius;
+
+    // 内置 Canvas 渲染器 / built-in Canvas renderer
+    if (!this.#opts.onRender) {
+      this.#opts.onRender = this.#canvasRender;
+    }
 
     this.#initTags(this.#opts.tags);
     this.#bindEvents();
     this.#loop();
+  }
+
+  /** 内置 Canvas 渲染器 / Built-in Canvas renderer */
+  #canvasRender = (tags: TagData[]): void => {
+    if (!this.#canvas) {
+      const c = document.createElement("canvas");
+      c.style.width = "100%";
+      c.style.height = "100%";
+      this.#container.appendChild(c);
+      this.#canvas = c;
+      this.#ctx = c.getContext("2d")!;
+      this.#resizeCanvas();
+    }
+    const { width, height } = this.#canvas.getBoundingClientRect();
+    const ctx = this.#ctx!;
+    ctx.clearRect(0, 0, width, height);
+    const { fontFamily, fontSize, color } = this.#opts;
+    for (const t of tags) {
+      ctx.save();
+      ctx.globalAlpha = t.alpha;
+      ctx.font = `${fontSize + t.scale * 5}px ${fontFamily}`;
+      ctx.fillStyle = color;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(t.text, t.x, t.y);
+      ctx.restore();
+    }
+  };
+
+  #resizeCanvas(): void {
+    const c = this.#canvas;
+    if (!c) return;
+    const dpr = window.devicePixelRatio || 1;
+    const { width, height } = c.getBoundingClientRect();
+    c.width = width * dpr;
+    c.height = height * dpr;
+    this.#ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
   // ── 公开 API / Public API ──
@@ -111,6 +168,7 @@ export class TagCloud {
     this.#container.removeEventListener("pointerdown", h.down);
     window.removeEventListener("pointermove", h.move);
     window.removeEventListener("pointerup", h.up);
+    if (this.#canvas) this.#canvas.remove();
   }
 
   // ── 内部方法 / Internal ──

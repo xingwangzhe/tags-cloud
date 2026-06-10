@@ -71,8 +71,6 @@ new TagCloud(document.getElementById("cloud")!, {
     "Stalux",
     "xingwangzhe",
   ],
-  width: 1100,
-  height: 600,
   onTagClick(item) {
     const urls: Record<string, string> = {
       TypeScript: "https://www.typescriptlang.org/",
@@ -115,6 +113,8 @@ new TagCloud(document.getElementById("cloud")!, {
     const name = typeof item === "string" ? item : "";
     if (urls[name]) window.open(urls[name], "_blank");
   },
-  radius: 320,
-  spinY: 0.15,
+  radius: innerWidth < 768 ? 220 : 320,
+  spinY: innerWidth < 768 ? 0.1 : 0.15,
+  width: innerWidth < 768 ? innerWidth - 32 : 0,
+  height: innerWidth < 768 ? 400 : 0,
 });

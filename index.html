@@ -9,8 +9,28 @@
     <meta name="description" content="A high-performance, pure-math 3D tag cloud engine supporting text, images, SVG, HTML, video, and Web Components. Fibonacci sphere distribution, Shoemake arcball rotation, quaternion-based drag interaction. Zero DOM overhead for text tags." />
     <meta name="keywords" content="3D tag cloud, canvas, sphere, fibonacci, quaternion, arcball, typescript, web component, multi-modal, animation, visualization" />
     <meta name="author" content="@xingwangzhe" />
-    <meta name="robots" content="index, follow" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow" />
+    <meta name="theme-color" content="#0a0a0f" />
+    <meta name="application-name" content="tags-cloud" />
+    <meta name="format-detection" content="telephone=no, email=no, address=no" />
+    <meta name="referrer" content="no-referrer-when-downgrade" />
+    <meta http-equiv="Content-Language" content="zh-CN" />
     <link rel="canonical" href="https://tagscloud.needhelp.icu" />
+    <link rel="alternate" hreflang="en" href="https://tagscloud.needhelp.icu" />
+    <link rel="alternate" hreflang="zh-CN" href="https://tagscloud.needhelp.icu" />
+    <link rel="icon" href="https://xingwangzhe.fun/avatar.webp" sizes="192x192" />
+
+    <!-- Apple PWA -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="tags-cloud" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <!-- Preconnect external origins -->
+    <link rel="preconnect" href="https://api.github.com" />
+    <link rel="preconnect" href="https://github.com" />
+    <link rel="preconnect" href="https://xingwangzhe.fun" />
+    <link rel="dns-prefetch" href="https://api.github.com" />
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
@@ -21,6 +41,9 @@
     <meta property="og:image:width" content="192" />
     <meta property="og:image:height" content="192" />
     <meta property="og:site_name" content="tags-cloud" />
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta property="og:image:alt" content="tags-cloud logo — xingwangzhe avatar" />
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary" />
@@ -31,18 +54,34 @@
 
     <!-- JSON-LD structured data -->
     <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "SoftwareApplication",
-        "name": "tags-cloud",
-        "applicationCategory": "DeveloperApplication",
-        "operatingSystem": "Web",
-        "description": "A high-performance pure-math 3D tag cloud engine for the browser. Supports multi-modal tags (text, image, SVG, HTML, video, Web Components) positioned on a Fibonacci sphere with quaternion-based arcball rotation.",
-        "url": "https://github.com/xingwangzhe/tags-cloud",
-        "author": { "@type": "Person", "name": "@xingwangzhe", "url": "https://xingwangzhe.fun" },
-        "license": "https://opensource.org/licenses/MIT",
-        "version": "0.9.0"
-      }
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "@id": "https://tagscloud.needhelp.icu",
+      "name": "tags-cloud",
+      "alternateName": "@xingwangzhe/tags-cloud",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Web Browser",
+      "browserRequirements": "Requires JavaScript. Supports all modern browsers with Canvas 2D API.",
+      "description": "A high-performance pure-math 3D tag cloud engine for the browser. Supports multi-modal tags (text, image, SVG, HTML, video, Web Components) on a Fibonacci sphere with quaternion-based Shoemake arcball rotation. Built with TypeScript, ~3KB gzipped. Zero DOM overhead for text and image tags.",
+      "url": "https://github.com/xingwangzhe/tags-cloud",
+      "sameAs": [
+        "https://www.npmjs.com/package/@xingwangzhe/tags-cloud",
+        "https://github.com/xingwangzhe/tags-cloud"
+      ],
+      "author": {
+        "@type": "Person",
+        "name": "xingwangzhe",
+        "url": "https://github.com/xingwangzhe",
+        "sameAs": "https://xingwangzhe.fun"
+      },
+      "license": "https://opensource.org/licenses/MIT",
+      "version": "0.9.0",
+      "dateModified": "2026-06-10",
+      "keywords": "tag-cloud, 3d, canvas, sphere, fibonacci, quaternion, arcball, typescript, web-component, multi-modal",
+      "inLanguage": ["zh-CN", "en"],
+      "isAccessibleForFree": true
+    }
     </script>
 
     <style>

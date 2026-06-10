@@ -73,10 +73,9 @@ export class TagCloud {
   #velX = 0;
   #paused = false;
 
-  // 拖拽状态 / drag state
+  // 拖拽状态 / arcball drag state
   #dragging = false;
-  #dragPrevX = 0;
-  #dragPrevY = 0;
+  #dragPrev = { x: 0, y: 0, z: 0 }; // 上一帧的球面 3D 抓取点
 
   // 动画 / animation
   #raf = 0;
@@ -131,23 +130,44 @@ export class TagCloud {
 
     this.#container.style.cursor = "grab";
 
+    const rect = () => this.#container.getBoundingClientRect();
+
     this.#handlers = {
       down: ((e: PointerEvent) => {
         this.#dragging = true;
         this.#container.style.cursor = "grabbing";
-        this.#dragPrevX = e.clientX;
-        this.#dragPrevY = e.clientY;
+        const r = rect();
+        this.#dragPrev = this.#screenToSphere(
+          e.clientX - r.left,
+          e.clientY - r.top,
+          r.width,
+          r.height,
+        );
         this.#velY = 0;
         this.#velX = 0;
       }) as EventListener,
       move: ((e: PointerEvent) => {
         if (!this.#dragging) return;
-        this.#velY = (e.clientX - this.#dragPrevX) * 0.3;
-        this.#velX = (e.clientY - this.#dragPrevY) * 0.3;
-        this.#rotY += this.#velY;
-        this.#rotX += this.#velX;
-        this.#dragPrevX = e.clientX;
-        this.#dragPrevY = e.clientY;
+        const r = rect();
+        const cur = this.#screenToSphere(e.clientX - r.left, e.clientY - r.top, r.width, r.height);
+        const prev = this.#dragPrev;
+        // 四元数旋转：从 prev 到 cur 的角速度
+        const crossX = prev.y * cur.z - prev.z * cur.y;
+        const crossY = prev.z * cur.x - prev.x * cur.z;
+        const crossZ = prev.x * cur.y - prev.y * cur.x;
+        const dot = prev.x * cur.x + prev.y * cur.y + prev.z * cur.z;
+        const angle = Math.acos(Math.min(1, Math.max(-1, dot)));
+        if (angle > 0.001) {
+          const s = Math.sin(angle);
+          const qx = (crossX / s) * angle;
+          const qy = (crossY / s) * angle;
+          const qz = (crossZ / s) * angle;
+          this.#velY = qy * (180 / Math.PI) * 0.8;
+          this.#velX = qx * (180 / Math.PI) * 0.8;
+          this.#rotY += this.#velY;
+          this.#rotX += this.#velX;
+        }
+        this.#dragPrev = cur;
       }) as EventListener,
       up: () => {
         this.#dragging = false;
@@ -158,6 +178,24 @@ export class TagCloud {
     this.#container.addEventListener("pointerdown", this.#handlers.down);
     window.addEventListener("pointermove", this.#handlers.move);
     window.addEventListener("pointerup", this.#handlers.up);
+  }
+
+  /** 屏幕坐标 → 球面 3D 点 / screen coords → sphere 3D point */
+  #screenToSphere(
+    sx: number,
+    sy: number,
+    w: number,
+    h: number,
+  ): { x: number; y: number; z: number } {
+    const x = (sx / w) * 2 - 1; // -1 ~ 1
+    const y = -((sy / h) * 2 - 1); // -1 ~ 1 (flip Y)
+    const r2 = x * x + y * y;
+    if (r2 > 1) {
+      // 球外：投影到球边缘 / outside sphere: project to edge
+      const inv = 1 / Math.sqrt(r2);
+      return { x: x * inv, y: y * inv, z: 0 };
+    }
+    return { x, y, z: Math.sqrt(1 - r2) };
   }
 
   #loop = (): void => {

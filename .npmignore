@@ -1,0 +1,9 @@
+test/
+vendor/
+node_modules/
+.gitignore
+tsconfig.json
+index.html
+src/main.ts
+vite.config.ts
+oxlintrc.json

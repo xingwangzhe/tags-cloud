@@ -1,0 +1,7 @@
+{
+  "rules": {
+    "no-unused-vars": "warn",
+    "no-const-assign": "error",
+    "no-duplicate-imports": "warn"
+  }
+}

@@ -194,7 +194,7 @@ export class TagCloud {
       down: ((e: PointerEvent) => {
         this.#dragging = true;
         this.#container.style.cursor = "grabbing";
-        this.#qDown = { ...this.#qNow }; // 保存起始朝向 / save start orientation
+        this.#qDown = { ...this.#qNow };
         const r = rect();
         this.#vDown = this.#screenToSphere(
           e.clientX - r.left,
@@ -209,7 +209,6 @@ export class TagCloud {
         if (!this.#dragging) return;
         const r = rect();
         const vCur = this.#screenToSphere(e.clientX - r.left, e.clientY - r.top, r.width, r.height);
-        // Shoemake arcball: q_drag = rotation from vDown to vCur
         const vA = this.#vDown;
         const dot = vA.x * vCur.x + vA.y * vCur.y + vA.z * vCur.z;
         const qDrag = {
@@ -218,7 +217,6 @@ export class TagCloud {
           y: vA.z * vCur.x - vA.x * vCur.z,
           z: vA.x * vCur.y - vA.y * vCur.x,
         };
-        // 归一化 / normalize
         const len = Math.sqrt(
           qDrag.w * qDrag.w + qDrag.x * qDrag.x + qDrag.y * qDrag.y + qDrag.z * qDrag.z,
         );
@@ -226,7 +224,7 @@ export class TagCloud {
         qDrag.x /= len;
         qDrag.y /= len;
         qDrag.z /= len;
-        // 组合: qNow = qDrag * qDown / compose: qNow = qDrag * qDown
+        // 组合 / compose
         const qD = this.#qDown;
         this.#qNow = {
           w: qDrag.w * qD.w - qDrag.x * qD.x - qDrag.y * qD.y - qDrag.z * qD.z,
@@ -234,6 +232,10 @@ export class TagCloud {
           y: qDrag.w * qD.y - qDrag.x * qD.z + qDrag.y * qD.w + qDrag.z * qD.x,
           z: qDrag.w * qD.z + qDrag.x * qD.y - qDrag.y * qD.x + qDrag.z * qD.w,
         };
+        // 拖拽速度用于松手后惯性 / drag velocity for release inertia
+        const rev = this.#opts.reverse ? -1 : 1;
+        this.#velY = (qDrag.y / len) * rev * 3;
+        this.#velX = (qDrag.x / len) * rev * 3;
       }) as EventListener,
       up: () => {
         this.#dragging = false;
@@ -304,15 +306,16 @@ export class TagCloud {
     const mode = this.#opts.mode;
 
     // 自旋 + 惯性 / auto-spin + inertia
+    const rev = this.#opts.reverse ? -1 : 1;
     if (!this.#dragging) {
       if (mode === "auto" || mode === "both") {
-        this.#rotateY(this.#opts.autoSpeed + this.#velY);
-        this.#rotateX(this.#velX);
+        this.#rotateY((this.#opts.autoSpeed + this.#velY) * rev);
+        this.#rotateX(this.#velX * rev);
         this.#velY *= 0.96;
         this.#velX *= 0.96;
       } else {
-        this.#rotateY(this.#velY);
-        this.#rotateX(this.#velX);
+        this.#rotateY(this.#velY * rev);
+        this.#rotateX(this.#velX * rev);
         this.#velY *= 0.95;
         this.#velX *= 0.95;
       }

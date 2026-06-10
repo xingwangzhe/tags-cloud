@@ -180,7 +180,11 @@ export class TagCloud {
   #canvas?: HTMLCanvasElement;
   #ctx?: CanvasRenderingContext2D;
 
-  // 点击：存储上一帧的 Canvas 文本标签投影坐标，供 raycast 查找
+  // DOM overlay（渲染 element/html/svg/video 标签）
+  #overlay?: HTMLDivElement;
+  #domEls: Map<TagItem, HTMLElement> = new Map();
+
+  // 点击：存储上一帧的 Canvas 标签投影坐标，供 raycast 查找
   #lastCanvasTags: { item: TagItem; x: number; y: number; scale: number }[] = [];
 
   constructor(container: HTMLElement, options: TagCloudOptions) {
@@ -219,6 +223,7 @@ export class TagCloud {
     window.removeEventListener("pointermove", h.move);
     window.removeEventListener("pointerup", h.up);
     if (this.#canvas) this.#canvas.remove();
+    if (this.#overlay) this.#overlay.remove();
   }
 
   // ── 内部方法
@@ -391,12 +396,49 @@ export class TagCloud {
         ctx.drawImage(img, t.x - sw / 2, t.y - sh / 2, sw, sh);
         ctx.restore();
         canvasTags.push({ item: t.item, x: t.x, y: t.y, scale: t.scale });
+      } else {
+        // DOM 标签（element/html/svg/video）→ overlay 渲染
+        currentDoms.add(t.item);
+        let el = this.#domEls.get(t.item);
+        if (!el) {
+          el = this.#createDomTag(t.item);
+          this.#domEls.set(t.item, el);
+          this.#overlay!.appendChild(el);
+          if (t.item.onClick) el.style.pointerEvents = "auto";
+        }
+        el.style.transform = `translate3d(${t.x.toFixed(1)}px, ${t.y.toFixed(1)}px, 0) scale(${t.scale.toFixed(2)})`;
+        el.style.opacity = String(t.alpha);
+        el.style.zIndex = String(Math.round(t.scale * 100));
+        canvasTags.push({ item: t.item, x: t.x, y: t.y, scale: t.scale });
       }
-      // SVG/HTML/Video/Element — 内置渲染器不处理，交给自定义 onRender
+    }
+
+    // 清理已移除的 DOM 标签
+    for (const [item, el] of this.#domEls) {
+      if (!currentDoms.has(item)) {
+        el.remove();
+        this.#domEls.delete(item);
+      }
     }
 
     this.#lastCanvasTags = canvasTags;
   };
+
+  /** 为富媒体标签创建 DOM 元素 */
+  #createDomTag(item: Exclude<TagItem, string>): HTMLElement {
+    const el = document.createElement("div");
+    el.style.position = "absolute";
+    el.style.top = "0";
+    el.style.left = "0";
+    el.style.willChange = "transform, opacity";
+    el.style.cursor = item.onClick ? "pointer" : "default";
+    if (item.type === "element") el.appendChild(item.element);
+    else if (item.type === "html") el.innerHTML = item.html;
+    else if (item.type === "svg") el.innerHTML = item.content;
+    else if (item.type === "video")
+      el.innerHTML = `<video src="${item.src}" width="${item.width}" height="${item.height}" autoplay muted loop playsinline></video>`;
+    return el;
+  }
 
   #resizeCanvas(): void {
     const c = this.#canvas;

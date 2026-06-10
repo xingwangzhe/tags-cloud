@@ -4,14 +4,14 @@ import { TagCloud } from "./index.ts";
 class GitHubCard extends HTMLElement {
   connectedCallback() {
     const user = this.getAttribute("user") || "xingwangzhe";
-    this.innerHTML = `<img src="https://github.com/${user}.png" alt="${user}" /><span class="name">@${user}</span><span class="stats">⭐ loading...</span>`;
+    this.innerHTML = `<img src="/avatar.webp" alt="${user}" /><span class="name">@${user}</span><span class="stats">⭐ loading...</span>`;
     fetch(`https://api.github.com/users/${user}`)
       .then((r) => r.json())
       .then((d) => {
         this.innerHTML = `<img src="${d.avatar_url}" alt="${user}" /><span class="name">@${user}</span><span class="stats">⭐ ${d.public_repos} repos · ${d.followers} followers</span>`;
       })
       .catch(() => {
-        this.innerHTML = `<img src="https://github.com/${user}.png" alt="${user}" /><span class="name">@${user}</span><span class="stats">👋 GitHub</span>`;
+        this.innerHTML = `<img src="/avatar.webp" alt="${user}" /><span class="name">@${user}</span><span class="stats">👋 GitHub</span>`;
       });
   }
 }

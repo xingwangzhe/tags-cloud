@@ -121,6 +121,9 @@ export interface TagCloudOptions {
   /** 文字颜色 */
   /** text color (default "#ffffff") */
   color?: string;
+  /** 全局标签点击回调（所有标签共用，通过 tag 文本区分） */
+  /** global click callback for all tags (distinguish by tag text) */
+  onTagClick?: (item: TagItem) => void;
   /** 自定义渲染回调（如不提供则用内置 Canvas） */
   /** custom render callback (built-in Canvas if omitted) */
   onRender?: (tags: TagData[]) => void;
@@ -323,7 +326,9 @@ export class TagCloud {
         }
       }
       if (best) {
-        (best.item as ImageTag | SvgTag | HtmlTag | VideoTag | ElementTag).onClick!();
+        const item = best.item;
+        if (isObjectTag(item) && item.onClick) item.onClick();
+        if (this.#opts.onTagClick) this.#opts.onTagClick(item);
       }
     });
   }
@@ -456,7 +461,13 @@ export class TagCloud {
     else if (item.type === "svg") el.innerHTML = item.content;
     else if (item.type === "video")
       el.innerHTML = `<video src="${item.src}" width="${item.width}" height="${item.height}" autoplay muted loop playsinline></video>`;
-    if (item.onClick) el.addEventListener("click", (e) => { e.stopPropagation(); item.onClick!(); });
+    if (item.onClick || this.#opts.onTagClick) {
+      el.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (item.onClick) item.onClick();
+        if (this.#opts.onTagClick) this.#opts.onTagClick(item);
+      });
+    }
     return el;
   }
 

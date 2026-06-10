@@ -298,21 +298,18 @@ export class TagCloud {
 
   #bindClicks(): void {
     this.#container.addEventListener("click", (e) => {
-      // 如果拖拽过（移动了），不触发点击
       if (Math.abs(this.#velY) > 1 || Math.abs(this.#velX) > 1) return;
-
       const r = this.#container.getBoundingClientRect();
       const cx = e.clientX - r.left;
       const cy = e.clientY - r.top;
-
-      // 在上一帧的 Canvas 文本标签中找最近的
       let best: { item: TagItem; dist: number } | null = null;
       for (const t of this.#lastCanvasTags) {
         if (!isObjectTag(t.item) || !t.item.onClick) continue;
         const dx = cx - t.x;
         const dy = cy - t.y;
         const d = Math.sqrt(dx * dx + dy * dy);
-        const hitRadius = 30 * t.scale;
+        const rw = t.item.type === "image" ? t.item.width / 2 : 30;
+        const hitRadius = rw * t.scale;
         if (d < hitRadius && (!best || d < best.dist)) {
           best = { item: t.item, dist: d };
         }
@@ -449,6 +446,7 @@ export class TagCloud {
     else if (item.type === "svg") el.innerHTML = item.content;
     else if (item.type === "video")
       el.innerHTML = `<video src="${item.src}" width="${item.width}" height="${item.height}" autoplay muted loop playsinline></video>`;
+    if (item.onClick) el.addEventListener("click", (e) => { e.stopPropagation(); item.onClick!(); });
     return el;
   }
 

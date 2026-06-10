@@ -71,7 +71,7 @@ const DEFAULTS: Omit<ResolvedOptions, "tags" | "onRender"> = {
   spinX: 0,
   reverse: false,
   reverseX: false,
-  reverseY: false,
+  reverseY: true,
   inertiaDecay: 0.96,
   dragSensitivity: 3,
   fontFamily: "system-ui, sans-serif",
@@ -215,9 +215,8 @@ export class TagCloud {
         const vCur = this.#screenToSphere(e.clientX - r.left, e.clientY - r.top, r.width, r.height);
         const vA = this.#vDown;
         const dot = vA.x * vCur.x + vA.y * vCur.y + vA.z * vCur.z;
-        // Shoemake arcball 四元数 / Shoemake arcball quaternion
-        // Y 默认已翻转（符合直觉），X 用原始方向
-        // Y is flipped by default (intuitive), X uses original direction
+        // Shoemake arcball 四元数，默认方向符合拖拽直觉
+        // Default direction matches human drag intuition (reverseY: true)
         const revX = this.#opts.reverse || this.#opts.reverseX ? -1 : 1;
         const revY = this.#opts.reverse || this.#opts.reverseY ? 1 : -1;
         const qDrag = {

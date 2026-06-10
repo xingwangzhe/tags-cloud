@@ -160,5 +160,4 @@ new TagCloud(document.getElementById("cloud")!, {
   ],
   radius: 320,
   spinY: 0.15,
-  reverseY: true,
 });

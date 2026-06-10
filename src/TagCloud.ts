@@ -211,11 +211,14 @@ export class TagCloud {
         const vCur = this.#screenToSphere(e.clientX - r.left, e.clientY - r.top, r.width, r.height);
         const vA = this.#vDown;
         const dot = vA.x * vCur.x + vA.y * vCur.y + vA.z * vCur.z;
+        // Shoemake arcball 四元数 / Shoemake arcball quaternion
+        // 取 cross = vCur × vA（反序）使拖拽方向符合直觉：
+        //   向右拖 → 球面向右转动 / drag right → sphere surface moves right
         const qDrag = {
           w: 1 + dot,
-          x: vA.y * vCur.z - vA.z * vCur.y,
-          y: vA.z * vCur.x - vA.x * vCur.z,
-          z: vA.x * vCur.y - vA.y * vCur.x,
+          x: vCur.y * vA.z - vCur.z * vA.y,
+          y: vCur.z * vA.x - vCur.x * vA.z,
+          z: vCur.x * vA.y - vCur.y * vA.x,
         };
         const len = Math.sqrt(
           qDrag.w * qDrag.w + qDrag.x * qDrag.x + qDrag.y * qDrag.y + qDrag.z * qDrag.z,

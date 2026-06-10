@@ -36,8 +36,12 @@ export interface TagCloudOptions {
   mode?: TagCloudMode;
   /** 自旋速度（°/帧）/ auto-spin speed in degrees per frame (default 0.15) */
   autoSpeed?: number;
-  /** 反转方向 / reverse direction (default false) */
+  /** 反转方向（X+Y 同时）/ reverse both axes (default false) */
   reverse?: boolean;
+  /** 单独反转 X 轴（上下拖拽）/ reverse X-axis drag only (default false) */
+  reverseX?: boolean;
+  /** 单独反转 Y 轴（左右拖拽）/ reverse Y-axis drag only (default false) */
+  reverseY?: boolean;
   /** 字体 / font family (default "system-ui, sans-serif") */
   fontFamily?: string;
   /** 基础字号（px）/ base font size in px (default 14) */
@@ -64,6 +68,8 @@ const DEFAULTS: Omit<ResolvedOptions, "tags" | "onRender"> = {
   mode: "both",
   autoSpeed: 0.15,
   reverse: false,
+  reverseX: false,
+  reverseY: false,
   fontFamily: "system-ui, sans-serif",
   fontSize: 14,
   color: "#ffffff",
@@ -212,13 +218,15 @@ export class TagCloud {
         const vA = this.#vDown;
         const dot = vA.x * vCur.x + vA.y * vCur.y + vA.z * vCur.z;
         // Shoemake arcball 四元数 / Shoemake arcball quaternion
-        // 仅翻转 Y 分量（左右拖拽），X 分量保持原方向（上下拖拽）
-        // Only flip Y component (left/right drag), keep X as-is (up/down drag)
+        // Y 默认已翻转（符合直觉），X 用原始方向
+        // Y is flipped by default (intuitive), X uses original direction
+        const revX = this.#opts.reverse || this.#opts.reverseX ? -1 : 1;
+        const revY = this.#opts.reverse || this.#opts.reverseY ? 1 : -1;
         const qDrag = {
           w: 1 + dot,
-          x: vA.y * vCur.z - vA.z * vCur.y,
-          y: vA.x * vCur.z - vA.z * vCur.x,
-          z: vA.x * vCur.y - vA.y * vCur.x,
+          x: (vA.y * vCur.z - vA.z * vCur.y) * revX,
+          y: (vA.x * vCur.z - vA.z * vCur.x) * revY,
+          z: (vA.x * vCur.y - vA.y * vCur.x) * revX * revY,
         };
         const len = Math.sqrt(
           qDrag.w * qDrag.w + qDrag.x * qDrag.x + qDrag.y * qDrag.y + qDrag.z * qDrag.z,
@@ -227,20 +235,17 @@ export class TagCloud {
         qDrag.x /= len;
         qDrag.y /= len;
         qDrag.z /= len;
-        // 反转：取共轭（反向旋转）/ reverse: use conjugate (inverse rotation)
-        const rev = this.#opts.reverse ? -1 : 1;
-        const qr = { w: qDrag.w, x: qDrag.x * rev, y: qDrag.y * rev, z: qDrag.z * rev };
-        // 组合 / compose
+        // 组合 / compose（反转已在上面的 qDrag 分量中体现）
         const qD = this.#qDown;
         this.#qNow = {
-          w: qr.w * qD.w - qr.x * qD.x - qr.y * qD.y - qr.z * qD.z,
-          x: qr.w * qD.x + qr.x * qD.w + qr.y * qD.z - qr.z * qD.y,
-          y: qr.w * qD.y - qr.x * qD.z + qr.y * qD.w + qr.z * qD.x,
-          z: qr.w * qD.z + qr.x * qD.y - qr.y * qD.x + qr.z * qD.w,
+          w: qDrag.w * qD.w - qDrag.x * qD.x - qDrag.y * qD.y - qDrag.z * qD.z,
+          x: qDrag.w * qD.x + qDrag.x * qD.w + qDrag.y * qD.z - qDrag.z * qD.y,
+          y: qDrag.w * qD.y - qDrag.x * qD.z + qDrag.y * qD.w + qDrag.z * qD.x,
+          z: qDrag.w * qD.z + qDrag.x * qD.y - qDrag.y * qD.x + qDrag.z * qD.w,
         };
         // 拖拽速度用于松手后惯性 / drag velocity for release inertia
-        this.#velY = (qr.y / len) * 3;
-        this.#velX = (qr.x / len) * 3;
+        this.#velY = (qDrag.y / len) * 3;
+        this.#velX = (qDrag.x / len) * 3;
       }) as EventListener,
       up: () => {
         this.#dragging = false;
@@ -311,16 +316,17 @@ export class TagCloud {
     const mode = this.#opts.mode;
 
     // 自旋 + 惯性 / auto-spin + inertia
-    const rev = this.#opts.reverse ? -1 : 1;
+    const revY = this.#opts.reverse || this.#opts.reverseY ? -1 : 1;
+    const revX = this.#opts.reverse || this.#opts.reverseX ? -1 : 1;
     if (!this.#dragging) {
       if (mode === "auto" || mode === "both") {
-        this.#rotateY((this.#opts.autoSpeed + this.#velY) * rev);
-        this.#rotateX(this.#velX * rev);
+        this.#rotateY((this.#opts.autoSpeed + this.#velY) * revY);
+        this.#rotateX(this.#velX * revX);
         this.#velY *= 0.96;
         this.#velX *= 0.96;
       } else {
-        this.#rotateY(this.#velY * rev);
-        this.#rotateX(this.#velX * rev);
+        this.#rotateY(this.#velY * revY);
+        this.#rotateX(this.#velX * revX);
         this.#velY *= 0.95;
         this.#velX *= 0.95;
       }

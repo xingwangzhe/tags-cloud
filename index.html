@@ -213,6 +213,45 @@
         margin-bottom: 6px;
         color: rgba(255, 255, 255, 0.2);
       }
+      /* ── 移动端响应式 / Mobile Responsive ── */
+      @media (max-width: 768px) {
+        nav {
+          height: 44px;
+          padding: 0 12px;
+        }
+        nav .logo {
+          font-size: 14px;
+        }
+        nav .links {
+          gap: 10px;
+        }
+        nav a {
+          font-size: 12px;
+        }
+        main {
+          padding: 16px 8px;
+        }
+        #cloud {
+          height: 450px;
+        }
+        footer {
+          padding: 14px 12px 20px;
+          font-size: 11px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        nav .logo span {
+          display: none;
+        }
+        nav a span,
+        nav a svg + * {
+          display: none;
+        }
+        #cloud {
+          height: 380px;
+        }
+      }
     </style>
   </head>
   <body>

@@ -224,18 +224,20 @@ export class TagCloud {
         qDrag.x /= len;
         qDrag.y /= len;
         qDrag.z /= len;
+        // 反转：取共轭（反向旋转）/ reverse: use conjugate (inverse rotation)
+        const rev = this.#opts.reverse ? -1 : 1;
+        const qr = { w: qDrag.w, x: qDrag.x * rev, y: qDrag.y * rev, z: qDrag.z * rev };
         // 组合 / compose
         const qD = this.#qDown;
         this.#qNow = {
-          w: qDrag.w * qD.w - qDrag.x * qD.x - qDrag.y * qD.y - qDrag.z * qD.z,
-          x: qDrag.w * qD.x + qDrag.x * qD.w + qDrag.y * qD.z - qDrag.z * qD.y,
-          y: qDrag.w * qD.y - qDrag.x * qD.z + qDrag.y * qD.w + qDrag.z * qD.x,
-          z: qDrag.w * qD.z + qDrag.x * qD.y - qDrag.y * qD.x + qDrag.z * qD.w,
+          w: qr.w * qD.w - qr.x * qD.x - qr.y * qD.y - qr.z * qD.z,
+          x: qr.w * qD.x + qr.x * qD.w + qr.y * qD.z - qr.z * qD.y,
+          y: qr.w * qD.y - qr.x * qD.z + qr.y * qD.w + qr.z * qD.x,
+          z: qr.w * qD.z + qr.x * qD.y - qr.y * qD.x + qr.z * qD.w,
         };
         // 拖拽速度用于松手后惯性 / drag velocity for release inertia
-        const rev = this.#opts.reverse ? -1 : 1;
-        this.#velY = (qDrag.y / len) * rev * 3;
-        this.#velX = (qDrag.x / len) * rev * 3;
+        this.#velY = (qr.y / len) * 3;
+        this.#velX = (qr.x / len) * 3;
       }) as EventListener,
       up: () => {
         this.#dragging = false;

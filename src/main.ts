@@ -17,7 +17,7 @@ class GitHubCard extends HTMLElement {
 }
 customElements.define("github-card", GitHubCard);
 
-// ── 启动 ──
+// ── 多模态标签云 ──
 new TagCloud(document.getElementById("cloud")!, {
   tags: [
     {
@@ -25,6 +25,7 @@ new TagCloud(document.getElementById("cloud")!, {
       element: new GitHubCard(),
       onClick: () => window.open("https://github.com/xingwangzhe", "_blank"),
     },
+    { type: "image", src: "/avatar.webp", width: 40, height: 40 },
     "TypeScript",
     "Canvas",
     "3D",
@@ -54,24 +55,19 @@ new TagCloud(document.getElementById("cloud")!, {
     "SQLite",
     "Redis",
     "GraphQL",
-    "REST",
     "CSS",
     "SVG",
-    "Canvas",
     "WebSocket",
     "WebRTC",
     "oxlint",
     "oxfmt",
-    "Rome",
     "Biome",
     "Prettier",
     "Fibonacci",
     "Quaternion",
     "Arcball",
-    "Sphere",
     "TagCloud",
     "Stalux",
-    "needhelp",
     "xingwangzhe",
   ],
   radius: 300,

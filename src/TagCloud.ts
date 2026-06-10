@@ -38,7 +38,7 @@ export interface TagCloudOptions {
   reverse?: boolean;
   /** 单独反转 X 轴（上下拖拽）/ reverse X-axis drag only (default false) */
   reverseX?: boolean;
-  /** 翻转 Y 轴拖拽 / flip Y-axis drag (default true = intuitive) */
+  /** 反转 Y 轴拖拽方向 / reverse Y-axis drag direction (default false) */
   /** 惯性衰减系数（每帧乘以此值）/ inertia decay per frame (default 0.96) */
   inertiaDecay?: number;
   /** 拖拽灵敏度（松手后惯性速度倍率）/ drag sensitivity for release velocity (default 3) */

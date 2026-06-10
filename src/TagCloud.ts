@@ -161,7 +161,7 @@ export class TagCloud {
           const s = Math.sin(angle);
           const qx = (crossX / s) * angle;
           const qy = (crossY / s) * angle;
-          const qz = (crossZ / s) * angle;
+          // qz = (crossZ / s) * angle — Z 轴旋转暂不使用 / Z-axis rotation unused
           this.#velY = qy * (180 / Math.PI) * 0.8;
           this.#velX = qx * (180 / Math.PI) * 0.8;
           this.#rotY += this.#velY;

@@ -159,7 +159,6 @@ new TagCloud(document.getElementById("cloud")!, {
     "mahal",
   ],
   radius: 320,
-  mode: "both",
-  autoSpeed: 0.15,
+  spinY: 0.15,
   reverseY: true,
 });

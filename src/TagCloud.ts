@@ -10,8 +10,6 @@ import { fibonacciSphere } from "./core/distribution";
 
 // ── 类型 / Types ──
 
-export type TagCloudMode = "auto" | "drag" | "both";
-
 /** 投影后的标签数据 / Projected tag data */
 export interface TagData {
   text: string;
@@ -32,10 +30,10 @@ export interface TagCloudOptions {
   tags: string[];
   /** 球面半径（px）/ sphere radius (px) (default 300) */
   radius?: number;
-  /** 交互模式 / interaction mode (default "both") */
-  mode?: TagCloudMode;
-  /** 自旋速度（°/帧）/ auto-spin speed in degrees per frame (default 0.15) */
-  autoSpeed?: number;
+  /** 绕 Y 轴自旋速度（°/帧）: +右转 -左转 0=关 / Y-axis auto-spin speed (°/frame): +right -left 0=off (default 0) */
+  spinY?: number;
+  /** 绕 X 轴自旋速度（°/帧）: +下转 -上转 0=关 / X-axis auto-spin speed (°/frame): +down -up 0=off (default 0) */
+  spinX?: number;
   /** 反转方向（X+Y 同时）/ reverse both axes (default false) */
   reverse?: boolean;
   /** 单独反转 X 轴（上下拖拽）/ reverse X-axis drag only (default false) */
@@ -69,8 +67,8 @@ type ResolvedOptions = TagCloudOptions & Required<Omit<TagCloudOptions, "onRende
 
 const DEFAULTS: Omit<ResolvedOptions, "tags" | "onRender"> = {
   radius: 300,
-  mode: "both",
-  autoSpeed: 0.15,
+  spinY: 0,
+  spinX: 0,
   reverse: false,
   reverseX: false,
   reverseY: false,
@@ -192,12 +190,6 @@ export class TagCloud {
   }
 
   #bindEvents(): void {
-    const mode = this.#opts.mode;
-    if (mode === "auto") {
-      this.#container.style.cursor = "default";
-      return;
-    }
-
     this.#container.style.cursor = "grab";
 
     const rect = () => this.#container.getBoundingClientRect();
@@ -327,17 +319,11 @@ export class TagCloud {
     const revX = this.#opts.reverse || this.#opts.reverseX ? -1 : 1;
     const decay = this.#opts.inertiaDecay;
     if (!this.#dragging) {
-      if (mode === "auto" || mode === "both") {
-        this.#rotateY((this.#opts.autoSpeed + this.#velY) * revY);
-        this.#rotateX(this.#velX * revX);
-        this.#velY *= decay;
-        this.#velX *= decay;
-      } else {
-        this.#rotateY(this.#velY * revY);
-        this.#rotateX(this.#velX * revX);
-        this.#velY *= decay;
-        this.#velX *= decay;
-      }
+      // spinY/spinX 符号决定方向，0=关闭 / sign determines direction, 0=off
+      this.#rotateY((this.#opts.spinY + this.#velY) * revY);
+      this.#rotateX((this.#opts.spinX + this.#velX) * revX);
+      this.#velY *= decay;
+      this.#velX *= decay;
     }
 
     // 直接用四元数构造 3×3 旋转矩阵 / build 3×3 rotation matrix directly from quaternion

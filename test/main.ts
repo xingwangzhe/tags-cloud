@@ -1,4 +1,4 @@
-import { TagCloud } from "./index.ts";
+import { TagCloud } from "../src/index.ts";
 
 // ── GitHub Card Web Component ──
 class GitHubCard extends HTMLElement {

@@ -1,5 +1,7 @@
 # @xingwangzhe/tags-cloud
 
+[English](README.md) | [中文文档](#)
+
 > 纯数学 3D 标签云引擎
 
 ## 特性

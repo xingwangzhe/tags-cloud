@@ -1,5 +1,7 @@
 # @xingwangzhe/tags-cloud
 
+[中文文档](README_CN.md) | [English](#)
+
 > Pure math 3D tag cloud engine
 
 ## Features

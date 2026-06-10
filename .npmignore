@@ -7,4 +7,5 @@ index.html
 src/main.ts
 public/
 vite.config.ts
+vite.demo.config.ts
 oxlintrc.json

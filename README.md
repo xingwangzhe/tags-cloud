@@ -70,6 +70,7 @@ new TagCloud(document.getElementById("cloud"), {
 | `fontFamily` | `string` | `system-ui` | Font family |
 | `fontSize` | `number` | `14` | Base font size (px) |
 | `color` | `string` | `#fff` | Text color |
+| `videoFullscreen` | `boolean` | `true` | Video tags click to fullscreen |
 | `onTagClick` | `(item) => void` | — | Global click callback for all tags |
 | `onRender` | `(tags) => void` | built-in | Custom render callback |
 

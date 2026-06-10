@@ -70,6 +70,7 @@ new TagCloud(document.getElementById("cloud"), {
 | `fontFamily` | `string` | `system-ui` | 字体 |
 | `fontSize` | `number` | `14` | 基础字号 |
 | `color` | `string` | `#fff` | 文字颜色 |
+| `videoFullscreen` | `boolean` | `true` | 视频点击全屏 |
 | `onTagClick` | `(item) => void` | — | 全局点击回调 |
 | `onRender` | `(tags) => void` | 内置Canvas | 自定义渲染 |
 

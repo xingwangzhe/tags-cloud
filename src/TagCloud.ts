@@ -431,7 +431,6 @@ export class TagCloud {
           el = this.#createDomTag(t.item);
           this.#domEls.set(t.item, el);
           this.#overlay!.appendChild(el);
-          if (t.item.onClick) el.style.pointerEvents = "auto";
         }
         el.style.transform = `translate3d(${t.x.toFixed(1)}px, ${t.y.toFixed(1)}px, 0) scale(${t.scale.toFixed(2)})`;
         el.style.opacity = String(t.alpha);
@@ -458,7 +457,9 @@ export class TagCloud {
     el.style.top = "0";
     el.style.left = "0";
     el.style.willChange = "transform, opacity";
-    el.style.cursor = item.onClick ? "pointer" : "default";
+    const clickable = !!(item.onClick || item.type === "video");
+    el.style.cursor = clickable ? "pointer" : "default";
+    el.style.pointerEvents = clickable ? "auto" : "none";
     if (item.type === "element") el.appendChild(item.element);
     else if (item.type === "html") el.innerHTML = item.html;
     else if (item.type === "svg") el.innerHTML = item.content;

@@ -5,6 +5,6 @@ node_modules/
 tsconfig.json
 index.html
 src/main.ts
-demo/
+public/
 vite.config.ts
 oxlintrc.json

@@ -21,16 +21,10 @@ bun add @xingwangzhe/tags-cloud
 ```ts
 import { TagCloud } from "@xingwangzhe/tags-cloud";
 
-const cloud = new TagCloud(container, {
+// 零配置，自动创建 Canvas 渲染
+new TagCloud(document.getElementById("cloud")!, {
   tags: ["TypeScript", "Canvas", "3D"],
   radius: 300,
-  onRender(tags) {
-    // tags: { text, x, y, z, scale, alpha }[]
-    // 在这里用 Canvas / WebGL 画标签
-    for (const t of tags) {
-      ctx.fillText(t.text, t.x, t.y);
-    }
-  },
 });
 ```
 
@@ -38,15 +32,21 @@ const cloud = new TagCloud(container, {
 
 ### `new TagCloud(container, options)`
 
-| 参数 / Option | 类型 / Type                 | 默认 / Default | 说明 / Description   |
-| ------------- | --------------------------- | -------------- | -------------------- |
-| `tags`        | `string[]`                  | —              | 标签文本列表         |
-| `radius`      | `number`                    | `300`          | 球面半径（px）       |
-| `speed`       | `number`                    | `0.3`          | 旋转速度系数         |
-| `direction`   | `number`                    | `135`          | 初始方向（顺时针°）  |
-| `keep`        | `boolean`                   | `true`         | 鼠标离开后是否继续转 |
-| `reverse`     | `boolean`                   | `false`        | 是否反转方向         |
-| `onRender`    | `(tags: TagData[]) => void` | —              | 每帧渲染回调         |
+| 参数              | 类型             | 默认        | 说明                |
+| ----------------- | ---------------- | ----------- | ------------------- |
+| `tags`            | `string[]`       | —           | 标签文本列表        |
+| `radius`          | `number`         | `300`       | 球面半径（px）      |
+| `spinY`           | `number`         | `0`         | Y轴自旋 +右/-左/0关 |
+| `spinX`           | `number`         | `0`         | X轴自旋 +下/-上/0关 |
+| `reverse`         | `boolean`        | `false`     | 反转XY拖拽          |
+| `reverseX`        | `boolean`        | `false`     | 反转上下拖拽        |
+| `reverseY`        | `boolean`        | `false`     | 反转左右拖拽        |
+| `inertiaDecay`    | `number`         | `0.96`      | 惯性衰减            |
+| `dragSensitivity` | `number`         | `3`         | 拖拽灵敏度          |
+| `fontFamily`      | `string`         | `system-ui` | 字体                |
+| `fontSize`        | `number`         | `14`        | 字号                |
+| `color`           | `string`         | `#fff`      | 颜色                |
+| `onRender`        | `(tags) => void` | 内置Canvas  | 自定义渲染          |
 
 ### 实例方法 / Instance Methods
 
@@ -55,16 +55,6 @@ cloud.setTags(["新", "标签"]); // 更新标签
 cloud.pause(); // 暂停
 cloud.resume(); // 恢复
 cloud.destroy(); // 销毁（清理事件+rAF）
-```
-
-## 底层数学模块 / Low-level Math
-
-```ts
-import {
-  fibonacciSphere, // 斐波那契球面分布
-  rotatePoints, // 批量 3D 旋转
-  project, // 透视投影
-} from "@xingwangzhe/tags-cloud";
 ```
 
 ## 开发 / Development

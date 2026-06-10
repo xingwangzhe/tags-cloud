@@ -462,8 +462,14 @@ export class TagCloud {
     if (item.type === "element") el.appendChild(item.element);
     else if (item.type === "html") el.innerHTML = item.html;
     else if (item.type === "svg") el.innerHTML = item.content;
-    else if (item.type === "video")
+    else if (item.type === "video") {
       el.innerHTML = `<video src="${item.src}" width="${item.width}" height="${item.height}" autoplay muted loop playsinline></video>`;
+      el.addEventListener("click", () => {
+        const v = el.querySelector("video")!;
+        if (document.fullscreenElement) { document.exitFullscreen(); }
+        else { v.play(); v.requestFullscreen(); }
+      });
+    }
     if (item.onClick || this.#opts.onTagClick) {
       el.addEventListener("click", (e) => {
         e.stopPropagation();

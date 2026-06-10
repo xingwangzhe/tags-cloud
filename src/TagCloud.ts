@@ -252,6 +252,7 @@ export class TagCloud {
 
   #bindEvents(): void {
     this.#container.style.cursor = "grab";
+    this.#container.style.touchAction = "none"; // 防止移动端手势干扰 / prevent mobile gestures
     const rect = () => this.#container.getBoundingClientRect();
 
     this.#handlers = {

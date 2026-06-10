@@ -70,6 +70,8 @@ new TagCloud(document.getElementById("cloud")!, {
     "Stalux",
     "xingwangzhe",
   ],
-  radius: 300,
+  width: 900,
+  height: 600,
+  radius: 320,
   spinY: 0.15,
 });

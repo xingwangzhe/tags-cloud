@@ -85,6 +85,12 @@ export interface TagCloudOptions {
   /** 球面半径（px） */
   /** sphere radius (px) (default 300) */
   radius?: number;
+  /** Canvas 宽度（px） */
+  /** canvas width in px (default follows container) */
+  width?: number;
+  /** Canvas 高度（px） */
+  /** canvas height in px (default follows container) */
+  height?: number;
   /** 绕 Y 轴自旋速度（°/帧）: +右转 -左转 0=关 */
   /** Y-axis auto-spin speed (°/frame): +right -left 0=off (default 0) */
   spinY?: number;
@@ -134,6 +140,8 @@ type ResolvedOptions = TagCloudOptions & Required<Omit<TagCloudOptions, "onRende
 
 const DEFAULTS: Omit<ResolvedOptions, "tags" | "onRender"> = {
   radius: 300,
+  width: 0,
+  height: 0,
   spinY: 0,
   spinX: 0,
   reverse: false,
@@ -341,8 +349,10 @@ export class TagCloud {
   #canvasRender = (tags: TagData[]): void => {
     if (!this.#canvas) {
       const c = document.createElement("canvas");
-      c.style.width = "100%";
-      c.style.height = "100%";
+      if (this.#opts.width) { c.style.width = `${this.#opts.width}px`; this.#container.style.width = `${this.#opts.width}px`; }
+      else c.style.width = "100%";
+      if (this.#opts.height) { c.style.height = `${this.#opts.height}px`; this.#container.style.height = `${this.#opts.height}px`; }
+      else c.style.height = "100%";
       this.#container.appendChild(c);
       this.#canvas = c;
       this.#ctx = c.getContext("2d")!;

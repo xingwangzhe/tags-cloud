@@ -270,19 +270,6 @@ export class TagCloud {
   };
 
   /** 四元数 → 欧拉角 / quaternion → Euler angles */
-  #toEuler(): { rotY: number; rotX: number } {
-    const q = this.#qNow;
-    // Y 轴旋转角 / Y-axis rotation angle
-    const sinY = 2 * (q.w * q.y - q.z * q.x);
-    const rotY =
-      Math.abs(sinY) > 0.9999
-        ? 2 * Math.atan2(q.x, q.w)
-        : Math.atan2(2 * (q.w * q.y + q.x * q.z), 1 - 2 * (q.y * q.y + q.x * q.x));
-    // X 轴旋转角 / X-axis rotation angle
-    const sinX = 2 * (q.w * q.x - q.y * q.z);
-    const rotX = Math.abs(sinX) > 0.9999 ? (Math.PI / 2) * Math.sign(sinX) : Math.asin(sinX);
-    return { rotY: (rotY * 180) / Math.PI, rotX: (rotX * 180) / Math.PI };
-  }
 
   /** 绕 Y 轴旋转 / rotate around Y axis */
   #rotateY(deg: number): void {

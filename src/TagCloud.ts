@@ -124,6 +124,8 @@ export interface TagCloudOptions {
   /** 全局标签点击回调（所有标签共用，通过 tag 文本区分） */
   /** global click callback for all tags (distinguish by tag text) */
   onTagClick?: (item: TagItem) => void;
+  /** 视频标签点击全屏 / video tags click to fullscreen (default true) */
+  videoFullscreen?: boolean;
   /** 自定义渲染回调（如不提供则用内置 Canvas） */
   /** custom render callback (built-in Canvas if omitted) */
   onRender?: (tags: TagData[]) => void;
@@ -154,6 +156,7 @@ const DEFAULTS: Omit<ResolvedOptions, "tags" | "onRender"> = {
   dragSensitivity: 3,
   fontFamily: "system-ui, sans-serif",
   fontSize: 14,
+  videoFullscreen: true,
   color: "#ffffff",
 };
 
@@ -457,7 +460,7 @@ export class TagCloud {
     el.style.top = "0";
     el.style.left = "0";
     el.style.willChange = "transform, opacity";
-    const clickable = !!(item.onClick || item.type === "video");
+    const clickable = !!(item.onClick || (item.type === "video" && this.#opts.videoFullscreen));
     el.style.cursor = clickable ? "pointer" : "default";
     el.style.pointerEvents = clickable ? "auto" : "none";
     if (item.type === "element") el.appendChild(item.element);
@@ -465,11 +468,13 @@ export class TagCloud {
     else if (item.type === "svg") el.innerHTML = item.content;
     else if (item.type === "video") {
       el.innerHTML = `<video src="${item.src}" width="${item.width}" height="${item.height}" autoplay muted loop playsinline></video>`;
-      el.addEventListener("click", () => {
-        const v = el.querySelector("video")!;
-        if (document.fullscreenElement) { document.exitFullscreen(); }
-        else { v.play(); v.requestFullscreen(); }
-      });
+      if (this.#opts.videoFullscreen) {
+        el.addEventListener("click", () => {
+          const v = el.querySelector("video")!;
+          if (document.fullscreenElement) { document.exitFullscreen(); }
+          else { v.play(); v.requestFullscreen(); }
+        });
+      }
     }
     if (item.onClick || this.#opts.onTagClick) {
       el.addEventListener("click", (e) => {

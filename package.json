@@ -1,6 +1,6 @@
 {
   "name": "@xingwangzhe/tags-cloud",
-  "version": "1.0.0",
+  "version": "0.5.0",
   "description": "Canvas-driven 3D tag cloud engine / Canvas 驱动的 3D 标签云引擎",
   "keywords": [
     "3d",

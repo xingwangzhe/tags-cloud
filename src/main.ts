@@ -4,14 +4,14 @@ import { TagCloud } from "./index.ts";
 class GitHubCard extends HTMLElement {
   connectedCallback() {
     const user = this.getAttribute("user") || "xingwangzhe";
-    this.innerHTML = `<img src="/avatar.webp" alt="${user}" /><span class="name">@${user}</span><span class="stats">⭐ loading...</span>`;
+    this.innerHTML = `<img src="https://xingwangzhe.fun/avatar.webp" alt="${user}" /><span class="name">@${user}</span><span class="stats">⭐ loading...</span>`;
     fetch(`https://api.github.com/users/${user}`)
       .then((r) => r.json())
       .then((d) => {
         this.innerHTML = `<img src="${d.avatar_url}" alt="${user}" /><span class="name">@${user}</span><span class="stats">⭐ ${d.public_repos} repos · ${d.followers} followers</span>`;
       })
       .catch(() => {
-        this.innerHTML = `<img src="/avatar.webp" alt="${user}" /><span class="name">@${user}</span><span class="stats">👋 GitHub</span>`;
+        this.innerHTML = `<img src="https://xingwangzhe.fun/avatar.webp" alt="${user}" /><span class="name">@${user}</span><span class="stats">👋 GitHub</span>`;
       });
   }
 }
@@ -25,7 +25,7 @@ new TagCloud(document.getElementById("cloud")!, {
       element: new GitHubCard(),
       onClick: () => window.open("https://github.com/xingwangzhe", "_blank"),
     },
-    { type: "image", src: "https://github.com/xingwangzhe.png", width: 40, height: 40, onClick: () => window.open("https://xingwangzhe.fun", "_blank") },
+    { type: "image", src: "https://xingwangzhe.fun/avatar.webp", width: 40, height: 40, onClick: () => window.open("https://xingwangzhe.fun", "_blank") },
 "TypeScript",
     "Canvas",
     "3D",

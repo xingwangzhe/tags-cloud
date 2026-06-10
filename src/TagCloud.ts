@@ -315,7 +315,7 @@ export class TagCloud {
       const cy = e.clientY - r.top;
       let best: { item: TagItem; dist: number } | null = null;
       for (const t of this.#lastCanvasTags) {
-        if (!isObjectTag(t.item) || !t.item.onClick) continue;
+        if (typeof t.item !== "string" && !t.item.onClick) continue;
         const dx = cx - t.x;
         const dy = cy - t.y;
         const d = Math.sqrt(dx * dx + dy * dy);

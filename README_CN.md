@@ -95,7 +95,7 @@ bun run fmt         # oxfmt
 
 ## 致谢
 
-核心算法移植自 [cong-min/TagCloud](https://github.com/cong-min/TagCloud)
+**特别感谢 [cong-min/TagCloud](https://github.com/cong-min/TagCloud)** — 本项目受其 3D 标签云库启发，核心球面分布和旋转算法移植自 TagCloud.js。
 
 ## 许可
 

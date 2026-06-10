@@ -95,7 +95,7 @@ bun run fmt         # oxfmt
 
 ## Credits
 
-Core algorithm ported from [cong-min/TagCloud](https://github.com/cong-min/TagCloud)
+**Special thanks to [cong-min/TagCloud](https://github.com/cong-min/TagCloud)** — the original 3D tag cloud library that inspired this project. Core sphere distribution and rotation algorithms are ported from TagCloud.js.
 
 ## License
 

@@ -42,6 +42,10 @@ export interface TagCloudOptions {
   reverseX?: boolean;
   /** 单独反转 Y 轴（左右拖拽）/ reverse Y-axis drag only (default false) */
   reverseY?: boolean;
+  /** 惯性衰减系数（每帧乘以此值）/ inertia decay per frame (default 0.96) */
+  inertiaDecay?: number;
+  /** 拖拽灵敏度（松手后惯性速度倍率）/ drag sensitivity for release velocity (default 3) */
+  dragSensitivity?: number;
   /** 字体 / font family (default "system-ui, sans-serif") */
   fontFamily?: string;
   /** 基础字号（px）/ base font size in px (default 14) */
@@ -70,6 +74,8 @@ const DEFAULTS: Omit<ResolvedOptions, "tags" | "onRender"> = {
   reverse: false,
   reverseX: false,
   reverseY: false,
+  inertiaDecay: 0.96,
+  dragSensitivity: 3,
   fontFamily: "system-ui, sans-serif",
   fontSize: 14,
   color: "#ffffff",
@@ -244,8 +250,9 @@ export class TagCloud {
           z: qDrag.w * qD.z + qDrag.x * qD.y - qDrag.y * qD.x + qDrag.z * qD.w,
         };
         // 拖拽速度用于松手后惯性 / drag velocity for release inertia
-        this.#velY = (qDrag.y / len) * 3;
-        this.#velX = (qDrag.x / len) * 3;
+        const sens = this.#opts.dragSensitivity;
+        this.#velY = (qDrag.y / len) * sens;
+        this.#velX = (qDrag.x / len) * sens;
       }) as EventListener,
       up: () => {
         this.#dragging = false;
@@ -318,17 +325,18 @@ export class TagCloud {
     // 自旋 + 惯性 / auto-spin + inertia
     const revY = this.#opts.reverse || this.#opts.reverseY ? -1 : 1;
     const revX = this.#opts.reverse || this.#opts.reverseX ? -1 : 1;
+    const decay = this.#opts.inertiaDecay;
     if (!this.#dragging) {
       if (mode === "auto" || mode === "both") {
         this.#rotateY((this.#opts.autoSpeed + this.#velY) * revY);
         this.#rotateX(this.#velX * revX);
-        this.#velY *= 0.96;
-        this.#velX *= 0.96;
+        this.#velY *= decay;
+        this.#velX *= decay;
       } else {
         this.#rotateY(this.#velY * revY);
         this.#rotateX(this.#velX * revX);
-        this.#velY *= 0.95;
-        this.#velX *= 0.95;
+        this.#velY *= decay;
+        this.#velX *= decay;
       }
     }
 

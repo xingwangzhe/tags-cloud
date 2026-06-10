@@ -357,6 +357,7 @@ export class TagCloud {
 
     // 保存文本标签坐标（用于点击 raycast）
     const canvasTags: { item: TagItem; x: number; y: number; scale: number }[] = [];
+    const currentDoms = new Set<TagItem>();
 
     // 先加载需要的图片
     const imageCache = new Map<string, HTMLImageElement>();

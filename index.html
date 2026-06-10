@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@xingwangzhe/tags-cloud — Dev</title>
+    <title>@xingwangzhe/tags-cloud — Multi-modal 3D Tag Cloud</title>
     <style>
       *,
       *::before,
@@ -13,18 +13,76 @@
         box-sizing: border-box;
       }
       body {
-        background: #111;
+        background: #0a0a0f;
+        color: #fff;
+        font-family: system-ui, -apple-system, sans-serif;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* ── 导航栏 / Nav ── */
+      nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 24px;
+        height: 52px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        background: rgba(255, 255, 255, 0.02);
+        backdrop-filter: blur(12px);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+      nav .logo {
+        font-weight: 700;
+        font-size: 16px;
+        color: #64ffda;
+        letter-spacing: -0.5px;
+      }
+      nav .logo span {
+        color: rgba(255, 255, 255, 0.5);
+        font-weight: 400;
+      }
+      nav .links {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+      }
+      nav a {
+        color: rgba(255, 255, 255, 0.65);
+        text-decoration: none;
+        font-size: 13px;
+        transition: color 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      nav a:hover {
+        color: #64ffda;
+      }
+      nav a svg {
+        width: 16px;
+        height: 16px;
+        fill: currentColor;
+      }
+
+      /* ── 主区域 / Main ── */
+      main {
+        flex: 1;
         display: flex;
         justify-content: center;
         align-items: center;
-        min-height: 100vh;
+        padding: 32px 16px;
       }
       #cloud {
-        width: 800px;
-        height: 600px;
+        width: 100%;
+        max-width: 1100px;
+        height: 580px;
       }
 
-      /* GitHub Card Web Component */
+      /* ── GitHub Card ── */
       github-card {
         display: inline-flex;
         align-items: center;
@@ -33,15 +91,14 @@
         border-radius: 99px;
         background: rgba(255, 255, 255, 0.08);
         border: 1px solid rgba(255, 255, 255, 0.12);
-        color: #fff;
-        font-family: system-ui, sans-serif;
         font-size: 13px;
         white-space: nowrap;
         cursor: pointer;
-        transition: background 0.2s;
+        transition: background 0.2s, border-color 0.2s;
       }
       github-card:hover {
-        background: rgba(255, 255, 255, 0.14);
+        background: rgba(100, 255, 218, 0.12);
+        border-color: rgba(100, 255, 218, 0.3);
       }
       github-card img {
         width: 32px;
@@ -55,10 +112,61 @@
         font-size: 11px;
         opacity: 0.6;
       }
+
+      /* ── 页脚 / Footer ── */
+      footer {
+        text-align: center;
+        padding: 20px 24px 28px;
+        color: rgba(255, 255, 255, 0.3);
+        font-size: 12px;
+        border-top: 1px solid rgba(255, 255, 255, 0.04);
+      }
+      footer a {
+        color: rgba(255, 255, 255, 0.45);
+        text-decoration: none;
+        transition: color 0.2s;
+      }
+      footer a:hover {
+        color: #64ffda;
+      }
+      footer .tagline {
+        margin-bottom: 6px;
+        color: rgba(255, 255, 255, 0.2);
+      }
     </style>
   </head>
   <body>
-    <div id="cloud"></div>
+    <!-- 导航栏 -->
+    <nav>
+      <div class="logo">tags-cloud <span>v0.5.0</span></div>
+      <div class="links">
+        <a href="https://github.com/xingwangzhe/tags-cloud" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.385-1.335-1.755-1.335-1.755-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12 24 5.37 18.63 0 12 0z"/></svg>
+          GitHub
+        </a>
+        <a href="https://www.npmjs.com/package/@xingwangzhe/tags-cloud" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><rect width="24" height="24" rx="3" fill="currentColor"/></svg>
+          npm
+        </a>
+      </div>
+    </nav>
+
+    <!-- 标签云 -->
+    <main>
+      <div id="cloud"></div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer>
+      <p class="tagline">multi-modal 3D tag cloud · pure math engine</p>
+      <p>
+        built with <a href="https://bun.sh" target="_blank">Bun</a> +
+        <a href="https://vite.dev" target="_blank">Vite</a> ·
+        <a href="https://github.com/xingwangzhe/tags-cloud/blob/main/LICENSE" target="_blank">MIT</a> ·
+        <a href="https://github.com/xingwangzhe" target="_blank">@xingwangzhe</a>
+      </p>
+    </footer>
+
     <script type="module" src="./test/main.ts"></script>
   </body>
 </html>

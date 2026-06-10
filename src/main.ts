@@ -23,9 +23,9 @@ new TagCloud(document.getElementById("cloud")!, {
     {
       type: "element",
       element: new GitHubCard(),
-      onClick: () => window.open("https://github.com/xingwangzhe", "_blank"),
+      onClick: () => window.open("https://xingwangzhe.fun", "_blank"),
     },
-    { type: "image", src: "https://xingwangzhe.fun/avatar.webp", width: 40, height: 40, onClick: () => window.open("https://xingwangzhe.fun", "_blank") },
+    { type: "image", src: "https://xingwangzhe.fun/avatar.webp", width: 40, height: 40, onClick: () => window.open("https://github.com/xingwangzhe", "_blank") },
 "TypeScript",
     "Canvas",
     "3D",

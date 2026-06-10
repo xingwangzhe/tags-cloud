@@ -2,6 +2,7 @@ import { TagCloud } from "./index.ts";
 
 new TagCloud(document.getElementById("cloud")!, {
   tags: [
+    { type: "image", src: "/demo/avatar.webp", width: 48, height: 48 },
     "love",
     "amor",
     "amour",

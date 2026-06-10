@@ -312,7 +312,6 @@ export class TagCloud {
     const rect = this.#container.getBoundingClientRect();
     const cx = rect.width / 2;
     const cy = rect.height / 2;
-    const mode = this.#opts.mode;
 
     // 自旋 + 惯性 / auto-spin + inertia
     const revY = this.#opts.reverse || this.#opts.reverseY ? -1 : 1;

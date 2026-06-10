@@ -25,7 +25,16 @@
  */
 
 export { TagCloud } from "./TagCloud";
-export type { TagCloudOptions, TagData } from "./TagCloud";
+export type {
+  TagCloudOptions,
+  TagData,
+  TagItem,
+  ImageTag,
+  SvgTag,
+  HtmlTag,
+  VideoTag,
+  ElementTag,
+} from "./TagCloud";
 export { fibonacciSphere } from "./core/distribution";
 export type { Vec3 } from "./core/distribution";
 export { rotatePoint, rotatePoints } from "./core/rotation";

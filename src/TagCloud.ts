@@ -10,34 +10,78 @@
  */
 import { fibonacciSphere } from "./core/distribution";
 
-// ── 类型
-// ── Types
+// ── 标签项类型
+// ── Tag Item Types
+
+/** 图片标签 */
+export interface ImageTag {
+  type: "image";
+  src: string;
+  width: number;
+  height: number;
+  onClick?: () => void;
+}
+
+/** SVG 标签 */
+export interface SvgTag {
+  type: "svg";
+  content: string;
+  width: number;
+  height: number;
+  onClick?: () => void;
+}
+
+/** HTML 标签（支持 innerHTML 字符串） */
+export interface HtmlTag {
+  type: "html";
+  html: string;
+  onClick?: () => void;
+}
+
+/** 视频标签 */
+export interface VideoTag {
+  type: "video";
+  src: string;
+  width: number;
+  height: number;
+  onClick?: () => void;
+}
+
+/** 任意 DOM 元素标签 */
+export interface ElementTag {
+  type: "element";
+  element: HTMLElement;
+  onClick?: () => void;
+}
+
+/** 标签内容：字符串 = 纯文本（Canvas 渲染），对象 = 富媒体 */
+/** Tag content: string = plain text (Canvas), object = rich media */
+export type TagItem = string | ImageTag | SvgTag | HtmlTag | VideoTag | ElementTag;
+
+// ── 通用类型
+// ── Common Types
 
 /** 投影后的标签数据 */
 /** Projected tag data */
 export interface TagData {
-  text: string;
+  /** 原始标签项 */
+  item: TagItem;
   /** 容器内 X 坐标（像素） */
-  /** X coordinate in container (px) */
   x: number;
   /** 容器内 Y 坐标（像素） */
-  /** Y coordinate in container (px) */
   y: number;
   /** Z 深度（-radius ~ +radius） */
-  /** Z depth */
   z: number;
   /** 缩放比例 (0 ~ 1+) */
-  /** scale factor */
   scale: number;
   /** 透明度 (0 ~ 1) */
-  /** opacity */
   alpha: number;
 }
 
 export interface TagCloudOptions {
-  /** 标签文本数组 */
-  /** tag text array */
-  tags: string[];
+  /** 标签列表（字符串 = 纯文本，对象 = 富媒体） */
+  /** tag list (string = plain text, object = rich media) */
+  tags: TagItem[];
   /** 球面半径（px） */
   /** sphere radius (px) (default 300) */
   radius?: number;
@@ -83,7 +127,7 @@ interface SpherePoint {
   x: number;
   y: number;
   z: number;
-  text: string;
+  item: TagItem;
 }
 
 type ResolvedOptions = TagCloudOptions & Required<Omit<TagCloudOptions, "onRender">>;
@@ -102,6 +146,11 @@ const DEFAULTS: Omit<ResolvedOptions, "tags" | "onRender"> = {
   color: "#ffffff",
 };
 
+/** 判断是否为对象类型的标签 */
+function isObjectTag(item: TagItem): item is Exclude<TagItem, string> {
+  return typeof item !== "string";
+}
+
 // ── 主类
 // ── Main Class
 
@@ -112,7 +161,6 @@ export class TagCloud {
   #depth: number;
 
   // 旋转状态 — 四元数
-  // rotation state as quaternion
   #qNow = { w: 1, x: 0, y: 0, z: 0 };
   #qDown = { w: 1, x: 0, y: 0, z: 0 };
   #velY = 0;
@@ -120,20 +168,20 @@ export class TagCloud {
   #paused = false;
 
   // 拖拽状态
-  // arcball drag state
   #dragging = false;
   #vDown = { x: 0, y: 0, z: 0 };
 
-  // 动画
-  // animation
+  // 内存
   #raf = 0;
   #container: HTMLElement;
   #handlers!: { down: EventListener; move: EventListener; up: EventListener };
 
-  // 内置 Canvas（仅当 onRender 未提供时创建）
-  // built-in Canvas (only when onRender is not provided)
+  // 内置 Canvas
   #canvas?: HTMLCanvasElement;
   #ctx?: CanvasRenderingContext2D;
+
+  // 点击：存储上一帧的 Canvas 文本标签投影坐标，供 raycast 查找
+  #lastCanvasTags: { item: TagItem; x: number; y: number; scale: number }[] = [];
 
   constructor(container: HTMLElement, options: TagCloudOptions) {
     this.#container = container;
@@ -141,59 +189,20 @@ export class TagCloud {
     this.#radius = this.#opts.radius;
     this.#depth = 2 * this.#radius;
 
-    // 内置 Canvas 渲染器
-    // built-in Canvas renderer
     if (!this.#opts.onRender) {
       this.#opts.onRender = this.#canvasRender;
     }
 
     this.#initTags(this.#opts.tags);
     this.#bindEvents();
+    this.#bindClicks();
     this.#loop();
-  }
-
-  /** 内置 Canvas 渲染器 */
-  /** Built-in Canvas renderer */
-  #canvasRender = (tags: TagData[]): void => {
-    if (!this.#canvas) {
-      const c = document.createElement("canvas");
-      c.style.width = "100%";
-      c.style.height = "100%";
-      this.#container.appendChild(c);
-      this.#canvas = c;
-      this.#ctx = c.getContext("2d")!;
-      this.#resizeCanvas();
-    }
-    const { width, height } = this.#canvas.getBoundingClientRect();
-    const ctx = this.#ctx!;
-    ctx.clearRect(0, 0, width, height);
-    const { fontFamily, fontSize, color } = this.#opts;
-    for (const t of tags) {
-      ctx.save();
-      ctx.globalAlpha = t.alpha;
-      ctx.font = `${fontSize + t.scale * 5}px ${fontFamily}`;
-      ctx.fillStyle = color;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(t.text, t.x, t.y);
-      ctx.restore();
-    }
-  };
-
-  #resizeCanvas(): void {
-    const c = this.#canvas;
-    if (!c) return;
-    const dpr = window.devicePixelRatio || 1;
-    const { width, height } = c.getBoundingClientRect();
-    c.width = width * dpr;
-    c.height = height * dpr;
-    this.#ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
   // ── 公开 API
   // ── Public API
 
-  setTags(tags: string[]): void {
+  setTags(tags: TagItem[]): void {
     this.#initTags(tags);
   }
   pause(): void {
@@ -215,15 +224,14 @@ export class TagCloud {
   // ── 内部方法
   // ── Internal
 
-  #initTags(tags: string[]): void {
+  #initTags(tags: TagItem[]): void {
     const size = 1.5 * this.#radius;
     const positions = fibonacciSphere(tags.length, size / 2);
-    this.#points = positions.map((p, i) => ({ ...p, text: tags[i]! }));
+    this.#points = positions.map((p, i) => ({ ...p, item: tags[i]! }));
   }
 
   #bindEvents(): void {
     this.#container.style.cursor = "grab";
-
     const rect = () => this.#container.getBoundingClientRect();
 
     this.#handlers = {
@@ -248,7 +256,6 @@ export class TagCloud {
         const vA = this.#vDown;
         const dot = vA.x * vCur.x + vA.y * vCur.y + vA.z * vCur.z;
         // Shoemake arcball 四元数
-        // Shoemake arcball quaternion
         const revX = this.#opts.reverse || this.#opts.reverseX ? -1 : 1;
         const revY = this.#opts.reverse || this.#opts.reverseY ? -1 : 1;
         const qDrag = {
@@ -262,8 +269,6 @@ export class TagCloud {
         qDrag.x /= len;
         qDrag.y /= len;
         qDrag.z /= len;
-        // 组合
-        // compose
         const qD = this.#qDown;
         this.#qNow = {
           w: qDrag.w * qD.w - qDrag.x * qD.x - qDrag.y * qD.y - qDrag.z * qD.z,
@@ -271,8 +276,6 @@ export class TagCloud {
           y: qDrag.w * qD.y - qDrag.x * qD.z + qDrag.y * qD.w + qDrag.z * qD.x,
           z: qDrag.w * qD.z + qDrag.x * qD.y - qDrag.y * qD.x + qDrag.z * qD.w,
         };
-        // 拖拽速度
-        // drag velocity
         const sens = this.#opts.dragSensitivity;
         this.#velY = (qDrag.y / len) * sens;
         this.#velX = (qDrag.x / len) * sens;
@@ -288,8 +291,34 @@ export class TagCloud {
     window.addEventListener("pointerup", this.#handlers.up);
   }
 
+  #bindClicks(): void {
+    this.#container.addEventListener("click", (e) => {
+      // 如果拖拽过（移动了），不触发点击
+      if (Math.abs(this.#velY) > 1 || Math.abs(this.#velX) > 1) return;
+
+      const r = this.#container.getBoundingClientRect();
+      const cx = e.clientX - r.left;
+      const cy = e.clientY - r.top;
+
+      // 在上一帧的 Canvas 文本标签中找最近的
+      let best: { item: TagItem; dist: number } | null = null;
+      for (const t of this.#lastCanvasTags) {
+        if (!isObjectTag(t.item) || !t.item.onClick) continue;
+        const dx = cx - t.x;
+        const dy = cy - t.y;
+        const d = Math.sqrt(dx * dx + dy * dy);
+        const hitRadius = 30 * t.scale;
+        if (d < hitRadius && (!best || d < best.dist)) {
+          best = { item: t.item, dist: d };
+        }
+      }
+      if (best) {
+        (best.item as ImageTag | SvgTag | HtmlTag | VideoTag | ElementTag).onClick!();
+      }
+    });
+  }
+
   /** 屏幕坐标 → 球面 3D 点 */
-  /** screen coords → sphere 3D point */
   #screenToSphere(
     sx: number,
     sy: number,
@@ -300,12 +329,83 @@ export class TagCloud {
     const y = -((sy / h) * 2 - 1);
     const r2 = x * x + y * y;
     if (r2 > 1) {
-      // 球外 → 投影到球边缘
-      // outside sphere → project to edge
       const inv = 1 / Math.sqrt(r2);
       return { x: x * inv, y: y * inv, z: 0 };
     }
     return { x, y, z: Math.sqrt(1 - r2) };
+  }
+
+  /** 内置 Canvas 渲染器（文本 + 图片） */
+  #canvasRender = (tags: TagData[]): void => {
+    if (!this.#canvas) {
+      const c = document.createElement("canvas");
+      c.style.width = "100%";
+      c.style.height = "100%";
+      this.#container.appendChild(c);
+      this.#canvas = c;
+      this.#ctx = c.getContext("2d")!;
+      this.#resizeCanvas();
+    }
+    const { width, height } = this.#canvas.getBoundingClientRect();
+    const ctx = this.#ctx!;
+    ctx.clearRect(0, 0, width, height);
+
+    // 保存文本标签坐标（用于点击 raycast）
+    const canvasTags: { item: TagItem; x: number; y: number; scale: number }[] = [];
+
+    // 先加载需要的图片
+    const imageCache = new Map<string, HTMLImageElement>();
+    const pendingImages: Promise<void>[] = [];
+
+    for (const t of tags) {
+      if (typeof t.item === "string") {
+        // 文本标签
+        const { fontFamily, fontSize, color } = this.#opts;
+        ctx.save();
+        ctx.globalAlpha = t.alpha;
+        ctx.font = `${fontSize + t.scale * 5}px ${fontFamily}`;
+        ctx.fillStyle = color;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(t.item, t.x, t.y);
+        ctx.restore();
+        canvasTags.push({ item: t.item, x: t.x, y: t.y, scale: t.scale });
+      } else if (t.item.type === "image") {
+        // 图片标签 — Canvas drawImage()
+        let img = imageCache.get(t.item.src);
+        if (!img) {
+          img = new Image();
+          img.src = t.item.src;
+          imageCache.set(t.item.src, img);
+          pendingImages.push(
+            new Promise((r) => {
+              img!.onload = () => r();
+            }),
+          );
+        }
+        const { width: iw, height: ih } = t.item;
+        const sw = iw * t.scale;
+        const sh = ih * t.scale;
+        ctx.save();
+        ctx.globalAlpha = t.alpha;
+        ctx.drawImage(img, t.x - sw / 2, t.y - sh / 2, sw, sh);
+        ctx.restore();
+        canvasTags.push({ item: t.item, x: t.x, y: t.y, scale: t.scale });
+      }
+      // SVG/HTML/Video/Element — 内置渲染器不处理，交给自定义 onRender
+    }
+
+    this.#lastCanvasTags = canvasTags;
+  };
+
+  #resizeCanvas(): void {
+    const c = this.#canvas;
+    if (!c) return;
+    const dpr = window.devicePixelRatio || 1;
+    const { width, height } = c.getBoundingClientRect();
+    c.width = width * dpr;
+    c.height = height * dpr;
+    this.#ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
   #loop = (): void => {
@@ -313,8 +413,6 @@ export class TagCloud {
     this.#raf = requestAnimationFrame(this.#loop);
   };
 
-  /** 绕 Y 轴旋转 */
-  /** rotate around Y axis */
   #rotateY(deg: number): void {
     const half = (deg * Math.PI) / 360;
     const qY = { w: Math.cos(half), x: 0, y: Math.sin(half), z: 0 };
@@ -327,8 +425,6 @@ export class TagCloud {
     };
   }
 
-  /** 绕 X 轴旋转 */
-  /** rotate around X axis */
   #rotateX(deg: number): void {
     const half = (deg * Math.PI) / 360;
     const qX = { w: Math.cos(half), x: Math.sin(half), y: 0, z: 0 };
@@ -347,7 +443,6 @@ export class TagCloud {
     const cy = rect.height / 2;
 
     // 自旋 + 惯性
-    // auto-spin + inertia
     const revY = this.#opts.reverse || this.#opts.reverseY ? -1 : 1;
     const revX = this.#opts.reverse || this.#opts.reverseX ? -1 : 1;
     const decay = this.#opts.inertiaDecay;
@@ -358,8 +453,7 @@ export class TagCloud {
       this.#velX *= decay;
     }
 
-    // 四元数构造 3×3 旋转矩阵
-    // build 3×3 rotation matrix from quaternion
+    // 四元数构造旋转矩阵
     const { w, x, y, z } = this.#qNow;
     const m00 = 1 - 2 * (y * y + z * z);
     const m01 = 2 * (x * y - w * z);
@@ -374,8 +468,6 @@ export class TagCloud {
     const projected: TagData[] = [];
 
     for (const p of this.#points) {
-      // 矩阵 × 点
-      // matrix × point
       const rx = m00 * p.x + m01 * p.y + m02 * p.z;
       const ry = m10 * p.x + m11 * p.y + m12 * p.z;
       const rz = m20 * p.x + m21 * p.y + (1 - 2 * (x * x + y * y)) * p.z;
@@ -384,7 +476,7 @@ export class TagCloud {
       const alpha = Math.min(1, Math.max(0, per * per - 0.25));
 
       projected.push({
-        text: p.text,
+        item: p.item,
         x: cx + rx * per,
         y: cy + ry * per,
         z: rz,

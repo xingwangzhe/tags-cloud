@@ -154,14 +154,12 @@ export class TagCloud {
         // 四元数旋转：从 prev 到 cur 的角速度
         const crossX = prev.y * cur.z - prev.z * cur.y;
         const crossY = prev.z * cur.x - prev.x * cur.z;
-        const crossZ = prev.x * cur.y - prev.y * cur.x;
         const dot = prev.x * cur.x + prev.y * cur.y + prev.z * cur.z;
         const angle = Math.acos(Math.min(1, Math.max(-1, dot)));
         if (angle > 0.001) {
           const s = Math.sin(angle);
-          const qx = (crossX / s) * angle;
           const qy = (crossY / s) * angle;
-          // qz = (crossZ / s) * angle — Z 轴旋转暂不使用 / Z-axis rotation unused
+          const qx = (crossX / s) * angle;
           this.#velY = qy * (180 / Math.PI) * 0.8;
           this.#velX = qx * (180 / Math.PI) * 0.8;
           this.#rotY += this.#velY;

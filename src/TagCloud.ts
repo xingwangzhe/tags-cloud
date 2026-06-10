@@ -1,59 +1,83 @@
 /**
- * 3D 标签云 — 纯数学引擎 / 3D Tag Cloud — Pure Math Engine
+ * 3D 标签云 — 纯数学引擎
+ * 3D Tag Cloud — Pure Math Engine
  *
  * 零 DOM 渲染，每帧通过 onRender 回调输出投影坐标
  * Zero DOM rendering, outputs projected coords via onRender callback each frame
  *
- * 基于 cong-min/TagCloud 算法 / Based on cong-min/TagCloud algorithm
+ * 基于 cong-min/TagCloud 算法
+ * Based on cong-min/TagCloud algorithm
  */
 import { fibonacciSphere } from "./core/distribution";
 
-// ── 类型 / Types ──
+// ── 类型
+// ── Types
 
-/** 投影后的标签数据 / Projected tag data */
+/** 投影后的标签数据 */
+/** Projected tag data */
 export interface TagData {
   text: string;
-  /** 容器内 X 坐标（像素）/ X coordinate in container (px) */
+  /** 容器内 X 坐标（像素） */
+  /** X coordinate in container (px) */
   x: number;
-  /** 容器内 Y 坐标（像素）/ Y coordinate in container (px) */
+  /** 容器内 Y 坐标（像素） */
+  /** Y coordinate in container (px) */
   y: number;
-  /** Z 深度（-radius ~ +radius）/ Z depth */
+  /** Z 深度（-radius ~ +radius） */
+  /** Z depth */
   z: number;
-  /** 缩放比例 (0 ~ 1+) / scale factor */
+  /** 缩放比例 (0 ~ 1+) */
+  /** scale factor */
   scale: number;
-  /** 透明度 (0 ~ 1) / opacity */
+  /** 透明度 (0 ~ 1) */
+  /** opacity */
   alpha: number;
 }
 
 export interface TagCloudOptions {
-  /** 标签文本数组 / tag text array */
+  /** 标签文本数组 */
+  /** tag text array */
   tags: string[];
-  /** 球面半径（px）/ sphere radius (px) (default 300) */
+  /** 球面半径（px） */
+  /** sphere radius (px) (default 300) */
   radius?: number;
-  /** 绕 Y 轴自旋速度（°/帧）: +右转 -左转 0=关 / Y-axis auto-spin speed (°/frame): +right -left 0=off (default 0) */
+  /** 绕 Y 轴自旋速度（°/帧）: +右转 -左转 0=关 */
+  /** Y-axis auto-spin speed (°/frame): +right -left 0=off (default 0) */
   spinY?: number;
-  /** 绕 X 轴自旋速度（°/帧）: +下转 -上转 0=关 / X-axis auto-spin speed (°/frame): +down -up 0=off (default 0) */
+  /** 绕 X 轴自旋速度（°/帧）: +下转 -上转 0=关 */
+  /** X-axis auto-spin speed (°/frame): +down -up 0=off (default 0) */
   spinX?: number;
-  /** 反转方向（X+Y 同时）/ reverse both axes (default false) */
+  /** 反转方向（X+Y 同时） */
+  /** reverse both axes (default false) */
   reverse?: boolean;
-  /** 单独反转 X 轴（上下拖拽）/ reverse X-axis drag only (default false) */
+  /** 单独反转 X 轴（上下拖拽） */
+  /** reverse X-axis drag only (default false) */
   reverseX?: boolean;
-  /** 反转 Y 轴拖拽方向 / reverse Y-axis drag direction (default false) */
-  /** 惯性衰减系数（每帧乘以此值）/ inertia decay per frame (default 0.96) */
+  /** 反转 Y 轴拖拽方向 */
+  /** reverse Y-axis drag direction (default false) */
+  reverseY?: boolean;
+  /** 惯性衰减系数（每帧乘以此值） */
+  /** inertia decay per frame (default 0.96) */
   inertiaDecay?: number;
-  /** 拖拽灵敏度（松手后惯性速度倍率）/ drag sensitivity for release velocity (default 3) */
+  /** 拖拽灵敏度（松手后惯性速度倍率） */
+  /** drag sensitivity for release velocity (default 3) */
   dragSensitivity?: number;
-  /** 字体 / font family (default "system-ui, sans-serif") */
+  /** 字体 */
+  /** font family (default "system-ui, sans-serif") */
   fontFamily?: string;
-  /** 基础字号（px）/ base font size in px (default 14) */
+  /** 基础字号（px） */
+  /** base font size in px (default 14) */
   fontSize?: number;
-  /** 文字颜色 / text color (default "#ffffff") */
+  /** 文字颜色 */
+  /** text color (default "#ffffff") */
   color?: string;
-  /** 自定义渲染回调（如不提供则用内置 Canvas）/ custom render callback (built-in Canvas if omitted) */
+  /** 自定义渲染回调（如不提供则用内置 Canvas） */
+  /** custom render callback (built-in Canvas if omitted) */
   onRender?: (tags: TagData[]) => void;
 }
 
-// ── 内部类型 / Internal Types ──
+// ── 内部类型
+// ── Internal Types
 
 interface SpherePoint {
   x: number;
@@ -78,7 +102,8 @@ const DEFAULTS: Omit<ResolvedOptions, "tags" | "onRender"> = {
   color: "#ffffff",
 };
 
-// ── 主类 / Main Class ──
+// ── 主类
+// ── Main Class
 
 export class TagCloud {
   #opts: ResolvedOptions;
@@ -86,23 +111,27 @@ export class TagCloud {
   #radius: number;
   #depth: number;
 
-  // 旋转状态 — 四元数 / rotation state as quaternion
-  #qNow = { w: 1, x: 0, y: 0, z: 0 }; // 当前朝向 / current orientation
-  #qDown = { w: 1, x: 0, y: 0, z: 0 }; // 拖拽起始朝向 / drag start orientation
+  // 旋转状态 — 四元数
+  // rotation state as quaternion
+  #qNow = { w: 1, x: 0, y: 0, z: 0 };
+  #qDown = { w: 1, x: 0, y: 0, z: 0 };
   #velY = 0;
   #velX = 0;
   #paused = false;
 
-  // 拖拽状态 / arcball drag state
+  // 拖拽状态
+  // arcball drag state
   #dragging = false;
   #vDown = { x: 0, y: 0, z: 0 };
 
-  // 动画 / animation
+  // 动画
+  // animation
   #raf = 0;
   #container: HTMLElement;
   #handlers!: { down: EventListener; move: EventListener; up: EventListener };
 
-  // 内置 Canvas（仅当 onRender 未提供时创建）/ built-in Canvas (only when onRender is not provided)
+  // 内置 Canvas（仅当 onRender 未提供时创建）
+  // built-in Canvas (only when onRender is not provided)
   #canvas?: HTMLCanvasElement;
   #ctx?: CanvasRenderingContext2D;
 
@@ -112,7 +141,8 @@ export class TagCloud {
     this.#radius = this.#opts.radius;
     this.#depth = 2 * this.#radius;
 
-    // 内置 Canvas 渲染器 / built-in Canvas renderer
+    // 内置 Canvas 渲染器
+    // built-in Canvas renderer
     if (!this.#opts.onRender) {
       this.#opts.onRender = this.#canvasRender;
     }
@@ -122,7 +152,8 @@ export class TagCloud {
     this.#loop();
   }
 
-  /** 内置 Canvas 渲染器 / Built-in Canvas renderer */
+  /** 内置 Canvas 渲染器 */
+  /** Built-in Canvas renderer */
   #canvasRender = (tags: TagData[]): void => {
     if (!this.#canvas) {
       const c = document.createElement("canvas");
@@ -159,7 +190,8 @@ export class TagCloud {
     this.#ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
-  // ── 公开 API / Public API ──
+  // ── 公开 API
+  // ── Public API
 
   setTags(tags: string[]): void {
     this.#initTags(tags);
@@ -180,7 +212,8 @@ export class TagCloud {
     if (this.#canvas) this.#canvas.remove();
   }
 
-  // ── 内部方法 / Internal ──
+  // ── 内部方法
+  // ── Internal
 
   #initTags(tags: string[]): void {
     const size = 1.5 * this.#radius;
@@ -214,8 +247,8 @@ export class TagCloud {
         const vCur = this.#screenToSphere(e.clientX - r.left, e.clientY - r.top, r.width, r.height);
         const vA = this.#vDown;
         const dot = vA.x * vCur.x + vA.y * vCur.y + vA.z * vCur.z;
-        // Shoemake arcball 四元数，默认方向符合拖拽直觉
-        // Default direction matches human drag intuition (reverseY: true)
+        // Shoemake arcball 四元数
+        // Shoemake arcball quaternion
         const revX = this.#opts.reverse || this.#opts.reverseX ? -1 : 1;
         const revY = this.#opts.reverse || this.#opts.reverseY ? -1 : 1;
         const qDrag = {
@@ -224,14 +257,13 @@ export class TagCloud {
           y: (vA.x * vCur.z - vA.z * vCur.x) * revY,
           z: (vA.x * vCur.y - vA.y * vCur.x) * revX * revY,
         };
-        const len = Math.sqrt(
-          qDrag.w * qDrag.w + qDrag.x * qDrag.x + qDrag.y * qDrag.y + qDrag.z * qDrag.z,
-        );
+        const len = Math.sqrt(qDrag.w ** 2 + qDrag.x ** 2 + qDrag.y ** 2 + qDrag.z ** 2);
         qDrag.w /= len;
         qDrag.x /= len;
         qDrag.y /= len;
         qDrag.z /= len;
-        // 组合 / compose（反转已在上面的 qDrag 分量中体现）
+        // 组合
+        // compose
         const qD = this.#qDown;
         this.#qNow = {
           w: qDrag.w * qD.w - qDrag.x * qD.x - qDrag.y * qD.y - qDrag.z * qD.z,
@@ -239,7 +271,8 @@ export class TagCloud {
           y: qDrag.w * qD.y - qDrag.x * qD.z + qDrag.y * qD.w + qDrag.z * qD.x,
           z: qDrag.w * qD.z + qDrag.x * qD.y - qDrag.y * qD.x + qDrag.z * qD.w,
         };
-        // 拖拽速度用于松手后惯性 / drag velocity for release inertia
+        // 拖拽速度
+        // drag velocity
         const sens = this.#opts.dragSensitivity;
         this.#velY = (qDrag.y / len) * sens;
         this.#velX = (qDrag.x / len) * sens;
@@ -255,18 +288,20 @@ export class TagCloud {
     window.addEventListener("pointerup", this.#handlers.up);
   }
 
-  /** 屏幕坐标 → 球面 3D 点 / screen coords → sphere 3D point */
+  /** 屏幕坐标 → 球面 3D 点 */
+  /** screen coords → sphere 3D point */
   #screenToSphere(
     sx: number,
     sy: number,
     w: number,
     h: number,
   ): { x: number; y: number; z: number } {
-    const x = (sx / w) * 2 - 1; // -1 ~ 1
-    const y = -((sy / h) * 2 - 1); // -1 ~ 1 (flip Y)
+    const x = (sx / w) * 2 - 1;
+    const y = -((sy / h) * 2 - 1);
     const r2 = x * x + y * y;
     if (r2 > 1) {
-      // 球外：投影到球边缘 / outside sphere: project to edge
+      // 球外 → 投影到球边缘
+      // outside sphere → project to edge
       const inv = 1 / Math.sqrt(r2);
       return { x: x * inv, y: y * inv, z: 0 };
     }
@@ -278,9 +313,8 @@ export class TagCloud {
     this.#raf = requestAnimationFrame(this.#loop);
   };
 
-  /** 四元数 → 欧拉角 / quaternion → Euler angles */
-
-  /** 绕 Y 轴旋转 / rotate around Y axis */
+  /** 绕 Y 轴旋转 */
+  /** rotate around Y axis */
   #rotateY(deg: number): void {
     const half = (deg * Math.PI) / 360;
     const qY = { w: Math.cos(half), x: 0, y: Math.sin(half), z: 0 };
@@ -293,7 +327,8 @@ export class TagCloud {
     };
   }
 
-  /** 绕 X 轴旋转 / rotate around X axis */
+  /** 绕 X 轴旋转 */
+  /** rotate around X axis */
   #rotateX(deg: number): void {
     const half = (deg * Math.PI) / 360;
     const qX = { w: Math.cos(half), x: Math.sin(half), y: 0, z: 0 };
@@ -311,32 +346,39 @@ export class TagCloud {
     const cx = rect.width / 2;
     const cy = rect.height / 2;
 
-    // 自旋 + 惯性 / auto-spin + inertia
+    // 自旋 + 惯性
+    // auto-spin + inertia
     const revY = this.#opts.reverse || this.#opts.reverseY ? -1 : 1;
     const revX = this.#opts.reverse || this.#opts.reverseX ? -1 : 1;
     const decay = this.#opts.inertiaDecay;
     if (!this.#dragging) {
-      // spinY/spinX 符号决定方向，0=关闭 / sign determines direction, 0=off
       this.#rotateY((this.#opts.spinY + this.#velY) * revY);
       this.#rotateX((this.#opts.spinX + this.#velX) * revX);
       this.#velY *= decay;
       this.#velX *= decay;
     }
 
-    // 直接用四元数构造 3×3 旋转矩阵 / build 3×3 rotation matrix directly from quaternion
+    // 四元数构造 3×3 旋转矩阵
+    // build 3×3 rotation matrix from quaternion
     const { w, x, y, z } = this.#qNow;
-    const [m00, m01, m02] = [1 - 2 * (y * y + z * z), 2 * (x * y - w * z), 2 * (x * z + w * y)];
-    const [m10, m11, m12] = [2 * (x * y + w * z), 1 - 2 * (x * x + z * z), 2 * (y * z - w * x)];
-    const [m20, m21, m22] = [2 * (x * z - w * y), 2 * (y * z + w * x), 1 - 2 * (x * x + y * y)];
+    const m00 = 1 - 2 * (y * y + z * z);
+    const m01 = 2 * (x * y - w * z);
+    const m02 = 2 * (x * z + w * y);
+    const m10 = 2 * (x * y + w * z);
+    const m11 = 1 - 2 * (x * x + z * z);
+    const m12 = 2 * (y * z - w * x);
+    const m20 = 2 * (x * z - w * y);
+    const m21 = 2 * (y * z + w * x);
 
     const d2 = this.#depth * 2;
     const projected: TagData[] = [];
 
     for (const p of this.#points) {
-      // 四元数旋转矩阵 × 点 / quaternion rotation matrix × point
+      // 矩阵 × 点
+      // matrix × point
       const rx = m00 * p.x + m01 * p.y + m02 * p.z;
       const ry = m10 * p.x + m11 * p.y + m12 * p.z;
-      const rz = m20 * p.x + m21 * p.y + m22 * p.z;
+      const rz = m20 * p.x + m21 * p.y + (1 - 2 * (x * x + y * y)) * p.z;
 
       const per = d2 / (d2 + rz);
       const alpha = Math.min(1, Math.max(0, per * per - 0.25));

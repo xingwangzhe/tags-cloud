@@ -3,7 +3,7 @@
  * 3D rotation transforms
  *
  * 绕 Y 轴和 X 轴旋转球面上的所有点
- * Rotates all points on the sphere around Y and X axes
+ * Rotates all points around Y and X axes
  *
  * ported from TagCloud.js _next() rotation logic
  */
@@ -14,9 +14,12 @@ import type { Vec3 } from "./distribution";
  * 旋转单个 3D 点
  * Rotate a single 3D point
  *
- * @param p — 待旋转的点 / point to rotate
- * @param a — 绕 Y 轴的旋转角（弧度）/ Y-axis rotation angle (radians)
- * @param b — 绕 X 轴的旋转角（弧度）/ X-axis rotation angle (radians)
+ * @param p - 待旋转的点
+ * @param p - point to rotate
+ * @param a - 绕 Y 轴的旋转角（弧度）
+ * @param a - Y-axis rotation angle (radians)
+ * @param b - 绕 X 轴的旋转角（弧度）
+ * @param b - X-axis rotation angle (radians)
  */
 export function rotatePoint(p: Vec3, a: number, b: number): Vec3 {
   const sinA = Math.sin(a);
@@ -24,16 +27,17 @@ export function rotatePoint(p: Vec3, a: number, b: number): Vec3 {
   const sinB = Math.sin(b);
   const cosB = Math.cos(b);
 
-  // Y 轴旋转 / Y-axis rotation
+  // Y 轴旋转
+  // Y-axis rotation
   const y1 = p.y * cosA + p.z * -sinA;
   const z1 = p.y * sinA + p.z * cosA;
 
-  // X 轴旋转 / X-axis rotation
+  // X 轴旋转
+  // X-axis rotation
   const x2 = p.x * cosB + z1 * sinB;
-  const y2 = y1;
   const z2 = z1 * cosB - p.x * sinB;
 
-  return { x: x2, y: y2, z: z2 };
+  return { x: x2, y: y1, z: z2 };
 }
 
 /**

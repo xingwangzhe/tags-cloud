@@ -180,6 +180,7 @@ export class TagCloud {
 
   // 拖拽状态
   #dragging = false;
+  #dragged = false;
   #vDown = { x: 0, y: 0, z: 0 };
 
   // 内存
@@ -267,6 +268,7 @@ export class TagCloud {
       }) as EventListener,
       move: ((e: PointerEvent) => {
         if (!this.#dragging) return;
+        this.#dragged = true;
         const r = rect();
         const vCur = this.#screenToSphere(e.clientX - r.left, e.clientY - r.top, r.width, r.height);
         const vA = this.#vDown;
@@ -299,6 +301,7 @@ export class TagCloud {
       up: () => {
         this.#dragging = false;
         this.#container.style.cursor = "grab";
+        setTimeout(() => { this.#dragged = false; }, 0);
       },
     };
 
@@ -309,7 +312,7 @@ export class TagCloud {
 
   #bindClicks(): void {
     this.#container.addEventListener("click", (e) => {
-      if (Math.abs(this.#velY) > 1 || Math.abs(this.#velX) > 1) return;
+      if (this.#dragged) return;
       const r = this.#container.getBoundingClientRect();
       const cx = e.clientX - r.left;
       const cy = e.clientY - r.top;

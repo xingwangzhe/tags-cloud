@@ -70,7 +70,7 @@ const DEFAULTS: Omit<ResolvedOptions, "tags" | "onRender"> = {
   spinX: 0,
   reverse: false,
   reverseX: false,
-  reverseY: true,
+  reverseY: false,
   inertiaDecay: 0.96,
   dragSensitivity: 3,
   fontFamily: "system-ui, sans-serif",
@@ -217,7 +217,7 @@ export class TagCloud {
         // Shoemake arcball 四元数，默认方向符合拖拽直觉
         // Default direction matches human drag intuition (reverseY: true)
         const revX = this.#opts.reverse || this.#opts.reverseX ? -1 : 1;
-        const revY = this.#opts.reverse || this.#opts.reverseY ? 1 : -1;
+        const revY = this.#opts.reverse || this.#opts.reverseY ? -1 : 1;
         const qDrag = {
           w: 1 + dot,
           x: (vA.y * vCur.z - vA.z * vCur.y) * revX,

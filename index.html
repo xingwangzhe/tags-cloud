@@ -20,8 +20,40 @@
         min-height: 100vh;
       }
       #cloud {
-        width: 700px;
-        height: 500px;
+        width: 800px;
+        height: 600px;
+      }
+
+      /* GitHub Card Web Component */
+      github-card {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 16px 8px 8px;
+        border-radius: 99px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: #fff;
+        font-family: system-ui, sans-serif;
+        font-size: 13px;
+        white-space: nowrap;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      github-card:hover {
+        background: rgba(255, 255, 255, 0.14);
+      }
+      github-card img {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+      }
+      github-card .name {
+        font-weight: 600;
+      }
+      github-card .stats {
+        font-size: 11px;
+        opacity: 0.6;
       }
     </style>
   </head>

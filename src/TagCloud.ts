@@ -77,16 +77,16 @@ export class TagCloud {
   #radius: number;
   #depth: number;
 
-  // 旋转状态 / rotation state
-  #rotY = 0;
-  #rotX = 0;
+  // 旋转状态 — 四元数 / rotation state as quaternion
+  #qNow = { w: 1, x: 0, y: 0, z: 0 }; // 当前朝向 / current orientation
+  #qDown = { w: 1, x: 0, y: 0, z: 0 }; // 拖拽起始朝向 / drag start orientation
   #velY = 0;
   #velX = 0;
   #paused = false;
 
   // 拖拽状态 / arcball drag state
   #dragging = false;
-  #dragPrev = { x: 0, y: 0, z: 0 };
+  #vDown = { x: 0, y: 0, z: 0 };
 
   // 动画 / animation
   #raf = 0;
@@ -194,8 +194,9 @@ export class TagCloud {
       down: ((e: PointerEvent) => {
         this.#dragging = true;
         this.#container.style.cursor = "grabbing";
+        this.#qDown = { ...this.#qNow }; // 保存起始朝向 / save start orientation
         const r = rect();
-        this.#dragPrev = this.#screenToSphere(
+        this.#vDown = this.#screenToSphere(
           e.clientX - r.left,
           e.clientY - r.top,
           r.width,
@@ -207,23 +208,32 @@ export class TagCloud {
       move: ((e: PointerEvent) => {
         if (!this.#dragging) return;
         const r = rect();
-        const cur = this.#screenToSphere(e.clientX - r.left, e.clientY - r.top, r.width, r.height);
-        const prev = this.#dragPrev;
-        // 四元数旋转：从 prev 到 cur 的角速度
-        const crossX = prev.y * cur.z - prev.z * cur.y;
-        const crossY = prev.z * cur.x - prev.x * cur.z;
-        const dot = prev.x * cur.x + prev.y * cur.y + prev.z * cur.z;
-        const angle = Math.acos(Math.min(1, Math.max(-1, dot)));
-        if (angle > 0.001) {
-          const s = Math.sin(angle);
-          const qy = (crossY / s) * angle;
-          const qx = (crossX / s) * angle;
-          this.#velY = qy * (180 / Math.PI) * 0.8;
-          this.#velX = qx * (180 / Math.PI) * 0.8;
-          this.#rotY += this.#velY;
-          this.#rotX += this.#velX;
-        }
-        this.#dragPrev = cur;
+        const vCur = this.#screenToSphere(e.clientX - r.left, e.clientY - r.top, r.width, r.height);
+        // Shoemake arcball: q_drag = rotation from vDown to vCur
+        const vA = this.#vDown;
+        const dot = vA.x * vCur.x + vA.y * vCur.y + vA.z * vCur.z;
+        const qDrag = {
+          w: 1 + dot,
+          x: vA.y * vCur.z - vA.z * vCur.y,
+          y: vA.z * vCur.x - vA.x * vCur.z,
+          z: vA.x * vCur.y - vA.y * vCur.x,
+        };
+        // 归一化 / normalize
+        const len = Math.sqrt(
+          qDrag.w * qDrag.w + qDrag.x * qDrag.x + qDrag.y * qDrag.y + qDrag.z * qDrag.z,
+        );
+        qDrag.w /= len;
+        qDrag.x /= len;
+        qDrag.y /= len;
+        qDrag.z /= len;
+        // 组合: qNow = qDrag * qDown / compose: qNow = qDrag * qDown
+        const qD = this.#qDown;
+        this.#qNow = {
+          w: qDrag.w * qD.w - qDrag.x * qD.x - qDrag.y * qD.y - qDrag.z * qD.z,
+          x: qDrag.w * qD.x + qDrag.x * qD.w + qDrag.y * qD.z - qDrag.z * qD.y,
+          y: qDrag.w * qD.y - qDrag.x * qD.z + qDrag.y * qD.w + qDrag.z * qD.x,
+          z: qDrag.w * qD.z + qDrag.x * qD.y - qDrag.y * qD.x + qDrag.z * qD.w,
+        };
       }) as EventListener,
       up: () => {
         this.#dragging = false;
@@ -259,33 +269,73 @@ export class TagCloud {
     this.#raf = requestAnimationFrame(this.#loop);
   };
 
+  /** 四元数 → 欧拉角 / quaternion → Euler angles */
+  #toEuler(): { rotY: number; rotX: number } {
+    const q = this.#qNow;
+    // Y 轴旋转角 / Y-axis rotation angle
+    const sinY = 2 * (q.w * q.y - q.z * q.x);
+    const rotY =
+      Math.abs(sinY) > 0.9999
+        ? 2 * Math.atan2(q.x, q.w)
+        : Math.atan2(2 * (q.w * q.y + q.x * q.z), 1 - 2 * (q.y * q.y + q.x * q.x));
+    // X 轴旋转角 / X-axis rotation angle
+    const sinX = 2 * (q.w * q.x - q.y * q.z);
+    const rotX = Math.abs(sinX) > 0.9999 ? (Math.PI / 2) * Math.sign(sinX) : Math.asin(sinX);
+    return { rotY: (rotY * 180) / Math.PI, rotX: (rotX * 180) / Math.PI };
+  }
+
+  /** 绕 Y 轴旋转 / rotate around Y axis */
+  #rotateY(deg: number): void {
+    const half = (deg * Math.PI) / 360;
+    const qY = { w: Math.cos(half), x: 0, y: Math.sin(half), z: 0 };
+    const q = this.#qNow;
+    this.#qNow = {
+      w: qY.w * q.w - qY.y * q.y,
+      x: qY.w * q.x + qY.y * q.z,
+      y: qY.w * q.y + qY.y * q.w,
+      z: qY.w * q.z - qY.y * q.x,
+    };
+  }
+
+  /** 绕 X 轴旋转 / rotate around X axis */
+  #rotateX(deg: number): void {
+    const half = (deg * Math.PI) / 360;
+    const qX = { w: Math.cos(half), x: Math.sin(half), y: 0, z: 0 };
+    const q = this.#qNow;
+    this.#qNow = {
+      w: qX.w * q.w - qX.x * q.x,
+      x: qX.w * q.x + qX.x * q.w,
+      y: qX.w * q.y - qX.x * q.z,
+      z: qX.w * q.z + qX.x * q.y,
+    };
+  }
+
   #tick(): void {
     const rect = this.#container.getBoundingClientRect();
     const cx = rect.width / 2;
     const cy = rect.height / 2;
     const mode = this.#opts.mode;
 
-    // 旋转
-    if (mode === "auto" || mode === "both") {
-      if (!this.#dragging) {
-        // 自旋 + 惯性衰减 / auto-spin + inertia decay
-        this.#rotY += this.#opts.autoSpeed + this.#velY;
-        this.#rotX += this.#velX;
+    // 自旋 + 惯性 / auto-spin + inertia
+    if (!this.#dragging) {
+      if (mode === "auto" || mode === "both") {
+        this.#rotateY(this.#opts.autoSpeed + this.#velY);
+        this.#rotateX(this.#velX);
         this.#velY *= 0.96;
         this.#velX *= 0.96;
+      } else {
+        this.#rotateY(this.#velY);
+        this.#rotateX(this.#velX);
+        this.#velY *= 0.95;
+        this.#velX *= 0.95;
       }
-    } else {
-      // drag-only：只响应拖拽 / drag-only: only respond to drag
-      this.#rotY += this.#velY;
-      this.#rotX += this.#velX;
-      this.#velY *= 0.95;
-      this.#velX *= 0.95;
     }
 
-    const sinA = Math.sin((this.#rotX * Math.PI) / 180);
-    const cosA = Math.cos((this.#rotX * Math.PI) / 180);
-    const sinB = Math.sin((this.#rotY * Math.PI) / 180);
-    const cosB = Math.cos((this.#rotY * Math.PI) / 180);
+    const { rotY, rotX } = this.#toEuler();
+    const sinA = Math.sin((rotX * Math.PI) / 180);
+    const cosA = Math.cos((rotX * Math.PI) / 180);
+    const sinB = Math.sin((rotY * Math.PI) / 180);
+    const cosB = Math.cos((rotY * Math.PI) / 180);
 
     const d2 = this.#depth * 2;
     const projected: TagData[] = [];

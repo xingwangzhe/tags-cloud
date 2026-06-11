@@ -1,6 +1,6 @@
 {
   "name": "@xingwangzhe/tags-cloud",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "description": "Canvas-driven 3D tag cloud engine",
   "keywords": [
     "3d",
@@ -10,6 +10,11 @@
     "tags"
   ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xingwangzhe/tags-cloud"
+  },
+  "author": "xingwangzhe",
   "files": [
     "dist",
     "src/core",

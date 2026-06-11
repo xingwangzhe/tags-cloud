@@ -31,6 +31,7 @@ export type {
   TagData,
   TagItem,
   ImageTag,
+  LinkTag,
   SvgTag,
   HtmlTag,
   VideoTag,

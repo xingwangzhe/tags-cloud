@@ -22,6 +22,14 @@ export interface ImageTag {
   onClick?: () => void;
 }
 
+/** 链接标签（Canvas 文本 + 点击跳转） */
+export interface LinkTag {
+  type: "link";
+  text: string;
+  url: string;
+  onClick?: () => void;
+}
+
 /** SVG 标签 */
 export interface SvgTag {
   type: "svg";
@@ -56,7 +64,7 @@ export interface ElementTag {
 
 /** 标签内容：字符串 = 纯文本（Canvas 渲染），对象 = 富媒体 */
 /** Tag content: string = plain text (Canvas), object = rich media */
-export type TagItem = string | ImageTag | SvgTag | HtmlTag | VideoTag | ElementTag;
+export type TagItem = string | ImageTag | LinkTag | SvgTag | HtmlTag | VideoTag | ElementTag;
 
 // ── 通用类型
 // ── Common Types
@@ -394,7 +402,12 @@ export class TagCloud {
       const cy = ce.clientY - r.top;
       let best: { item: TagItem; dist: number } | null = null;
       for (const t of this.#lastCanvasTags) {
-        if (typeof t.item !== "string" && !t.item.onClick) {
+        // 跳过无可点击行为的对象标签（link 类型除外：自带 url）
+        if (
+          typeof t.item !== "string" &&
+          !t.item.onClick &&
+          !(isObjectTag(t.item) && t.item.type === "link")
+        ) {
           continue;
         }
         const dx = cx - t.x;
@@ -410,6 +423,8 @@ export class TagCloud {
         const item = best.item;
         if (isObjectTag(item) && item.onClick) {
           item.onClick();
+        } else if (isObjectTag(item) && item.type === "link") {
+          window.open(item.url, "_blank");
         }
         if (this.#opts.onTagClick) {
           this.#opts.onTagClick(item);
@@ -477,26 +492,25 @@ export class TagCloud {
     const currentDoms = new Set<TagItem>();
 
     for (const t of tags) {
-      if (typeof t.item === "string") {
-        // 文本标签 — 离屏预渲染 + drawImage 缩放，避免逐帧 fillText 字体重光栅化
+      if (typeof t.item === "string" || t.item.type === "link") {
+        // 文本 / 链接标签 — 离屏预渲染 + drawImage 缩放
+        const text = typeof t.item === "string" ? t.item : t.item.text;
         const { fontFamily, fontSize, color } = this.#opts;
-        const baseFs = fontSize + 8; // 略大于最大可能字号，保证缩放质量
-        const cacheKey = `${t.item}|${fontFamily}|${color}`;
+        const baseFs = fontSize + 8;
+        const cacheKey = `${text}|${fontFamily}|${color}`;
         let cached = this.#textCache.get(cacheKey);
         if (!cached) {
           const off = document.createElement("canvas");
           const octx = off.getContext("2d")!;
           off.height = Math.ceil(baseFs * 1.5);
-          // 先临时设置字体以测量宽度
           octx.font = `${baseFs}px ${fontFamily}`;
-          const m = octx.measureText(t.item);
-          off.width = Math.ceil(m.width) + 8; // 4px padding 每侧
-          // 重新设置字体（因为改变尺寸会重置 context）
+          const m = octx.measureText(text);
+          off.width = Math.ceil(m.width) + 8;
           octx.font = `${baseFs}px ${fontFamily}`;
           octx.fillStyle = color;
           octx.textAlign = "center";
           octx.textBaseline = "middle";
-          octx.fillText(t.item, off.width / 2, off.height / 2);
+          octx.fillText(text, off.width / 2, off.height / 2);
           cached = off;
           this.#textCache.set(cacheKey, cached);
         }

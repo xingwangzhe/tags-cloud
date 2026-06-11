@@ -223,6 +223,8 @@ export class TagCloud {
 
   // 图片缓存 — 复用 Image 元素，避免每帧 new Image() + 设 src 造成重复请求
   #imageCache: Map<string, HTMLImageElement> = new Map();
+  // 图片重试计数（broken 后最多重试一次）
+  #imageRetries: Map<string, boolean> = new Map();
 
   constructor(container: HTMLElement, options: TagCloudOptions) {
     this.#container = container;
@@ -320,6 +322,7 @@ export class TagCloud {
     this.#cleanupDomEls();
     // 清理缓存，确保新标签的资源能正确加载
     this.#imageCache.clear();
+    this.#imageRetries.clear();
     this.#textCache.clear();
   }
 
@@ -536,9 +539,12 @@ export class TagCloud {
           canvasTags.push({ item: t.item, x: t.x, y: t.y, scale: t.scale });
           continue;
         }
-        // 图片加载失败（404 等）：清除缓存，下帧创建新 Image 重载
+        // 图片加载失败（404 等）：清除缓存，最多重试一次
         if (img.naturalWidth === 0) {
-          this.#imageCache.delete(t.item.src);
+          if (!this.#imageRetries.has(t.item.src)) {
+            this.#imageRetries.set(t.item.src, true);
+            this.#imageCache.delete(t.item.src);
+          }
           canvasTags.push({ item: t.item, x: t.x, y: t.y, scale: t.scale });
           continue;
         }

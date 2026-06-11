@@ -41,15 +41,93 @@ new TagCloud(document.getElementById("cloud"), {
 
 ## 标签类型
 
-| TagItem              | 渲染   | 示例                                               |
-| -------------------- | ------ | -------------------------------------------------- |
-| `string`             | Canvas | `"TypeScript"`                                     |
-| `{ type:"link" }`    | Canvas | `{ type:"link", text, url, onClick? }`             |
-| `{ type:"image" }`   | Canvas | `{ type:"image", src, width, height, onClick? }`   |
-| `{ type:"svg" }`     | DOM    | `{ type:"svg", content, width, height, onClick? }` |
-| `{ type:"html" }`    | DOM    | `{ type:"html", html, onClick? }`                  |
-| `{ type:"video" }`   | DOM    | `{ type:"video", src, width, height, onClick? }`   |
-| `{ type:"element" }` | DOM    | `{ type:"element", element, onClick? }`            |
+### `string` — 纯文本（Canvas）
+
+```ts
+{
+  tags: ["TypeScript", "Rust", "3D"];
+}
+```
+
+| 字段 | 类型     | 必填 | 说明                                               |
+| ---- | -------- | :--: | -------------------------------------------------- |
+| (值) | `string` |  是  | 文本，使用全局 `fontFamily` / `fontSize` / `color` |
+
+### `{ type: "link" }` — 可点击文本链接（Canvas）
+
+```ts
+{ type: "link", text: "TypeScript", url: "https://www.typescriptlang.org/" }
+```
+
+| 字段      | 类型         | 必填 | 说明                   |
+| --------- | ------------ | :--: | ---------------------- |
+| `text`    | `string`     |  是  | 显示文本               |
+| `url`     | `string`     |  是  | 点击跳转 URL           |
+| `onClick` | `() => void` |  否  | 自定义点击（覆盖 url） |
+
+### `{ type: "image" }` — 图片（Canvas）
+
+```ts
+{ type: "image", src: "/avatar.webp", width: 40, height: 40, onClick: () => open("/profile") }
+```
+
+| 字段      | 类型         | 必填 | 说明           |
+| --------- | ------------ | :--: | -------------- |
+| `src`     | `string`     |  是  | 图片 URL       |
+| `width`   | `number`     |  是  | 显示宽度（px） |
+| `height`  | `number`     |  是  | 显示高度（px） |
+| `onClick` | `() => void` |  否  | 点击回调       |
+
+### `{ type: "video" }` — 视频（DOM）
+
+```ts
+{ type: "video", src: "/clip.mp4", width: 120, height: 68 }
+```
+
+| 字段      | 类型         | 必填 | 说明                 |
+| --------- | ------------ | :--: | -------------------- |
+| `src`     | `string`     |  是  | 视频 URL             |
+| `width`   | `number`     |  是  | 显示宽度（px）       |
+| `height`  | `number`     |  是  | 显示高度（px）       |
+| `onClick` | `() => void` |  否  | 点击回调（默认全屏） |
+
+### `{ type: "html" }` — HTML（DOM）
+
+```ts
+{ type: "html", html: "<b>粗体</b>", onClick: () => console.log("clicked") }
+```
+
+| 字段      | 类型         | 必填 | 说明               |
+| --------- | ------------ | :--: | ------------------ |
+| `html`    | `string`     |  是  | `innerHTML` 字符串 |
+| `onClick` | `() => void` |  否  | 点击回调           |
+
+### `{ type: "svg" }` — SVG（DOM）
+
+```ts
+{ type: "svg", content: "<svg viewBox=\"0 0 24 24\">...</svg>", width: 48, height: 48 }
+```
+
+| 字段      | 类型         | 必填 | 说明           |
+| --------- | ------------ | :--: | -------------- |
+| `content` | `string`     |  是  | SVG 标记字符串 |
+| `width`   | `number`     |  是  | 显示宽度（px） |
+| `height`  | `number`     |  是  | 显示高度（px） |
+| `onClick` | `() => void` |  否  | 点击回调       |
+
+### `{ type: "element" }` — DOM 元素（DOM）
+
+```ts
+const el = document.createElement("div");
+el.textContent = "你好";
+// ...
+{ type: "element", element: el, onClick: () => el.classList.toggle("active") }
+```
+
+| 字段      | 类型          | 必填 | 说明                            |
+| --------- | ------------- | :--: | ------------------------------- |
+| `element` | `HTMLElement` |  是  | 任意 DOM 元素（作为子节点追加） |
+| `onClick` | `() => void`  |  否  | 点击回调                        |
 
 ## API
 

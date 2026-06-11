@@ -41,15 +41,93 @@ new TagCloud(document.getElementById("cloud"), {
 
 ## Tag Types
 
-| TagItem              | Renderer | Example                                            |
-| -------------------- | -------- | -------------------------------------------------- |
-| `string`             | Canvas   | `"TypeScript"`                                     |
-| `{ type:"link" }`    | Canvas   | `{ type:"link", text, url, onClick? }`             |
-| `{ type:"image" }`   | Canvas   | `{ type:"image", src, width, height, onClick? }`   |
-| `{ type:"svg" }`     | DOM      | `{ type:"svg", content, width, height, onClick? }` |
-| `{ type:"html" }`    | DOM      | `{ type:"html", html, onClick? }`                  |
-| `{ type:"video" }`   | DOM      | `{ type:"video", src, width, height, onClick? }`   |
-| `{ type:"element" }` | DOM      | `{ type:"element", element, onClick? }`            |
+### `string` — Plain Text (Canvas)
+
+```ts
+{
+  tags: ["TypeScript", "Rust", "3D"];
+}
+```
+
+| Field   | Type     | Required | Description                                            |
+| ------- | -------- | :------: | ------------------------------------------------------ |
+| (value) | `string` |   Yes    | Text rendered with `fontFamily` / `fontSize` / `color` |
+
+### `{ type: "link" }` — Clickable Text Link (Canvas)
+
+```ts
+{ type: "link", text: "TypeScript", url: "https://www.typescriptlang.org/" }
+```
+
+| Field     | Type         | Required | Description                          |
+| --------- | ------------ | :------: | ------------------------------------ |
+| `text`    | `string`     |   Yes    | Display text                         |
+| `url`     | `string`     |   Yes    | URL to open on click                 |
+| `onClick` | `() => void` |    No    | Custom click handler (overrides url) |
+
+### `{ type: "image" }` — Image (Canvas)
+
+```ts
+{ type: "image", src: "/avatar.webp", width: 40, height: 40, onClick: () => open("/profile") }
+```
+
+| Field     | Type         | Required | Description         |
+| --------- | ------------ | :------: | ------------------- |
+| `src`     | `string`     |   Yes    | Image URL           |
+| `width`   | `number`     |   Yes    | Display width (px)  |
+| `height`  | `number`     |   Yes    | Display height (px) |
+| `onClick` | `() => void` |    No    | Click handler       |
+
+### `{ type: "video" }` — Video (DOM)
+
+```ts
+{ type: "video", src: "/clip.mp4", width: 120, height: 68 }
+```
+
+| Field     | Type         | Required | Description                           |
+| --------- | ------------ | :------: | ------------------------------------- |
+| `src`     | `string`     |   Yes    | Video URL                             |
+| `width`   | `number`     |   Yes    | Display width (px)                    |
+| `height`  | `number`     |   Yes    | Display height (px)                   |
+| `onClick` | `() => void` |    No    | Click handler (fullscreen by default) |
+
+### `{ type: "html" }` — HTML (DOM)
+
+```ts
+{ type: "html", html: "<b>bold</b>", onClick: () => console.log("clicked") }
+```
+
+| Field     | Type         | Required | Description        |
+| --------- | ------------ | :------: | ------------------ |
+| `html`    | `string`     |   Yes    | `innerHTML` string |
+| `onClick` | `() => void` |    No    | Click handler      |
+
+### `{ type: "svg" }` — SVG (DOM)
+
+```ts
+{ type: "svg", content: "<svg viewBox=\"0 0 24 24\">...</svg>", width: 48, height: 48 }
+```
+
+| Field     | Type         | Required | Description         |
+| --------- | ------------ | :------: | ------------------- |
+| `content` | `string`     |   Yes    | SVG markup string   |
+| `width`   | `number`     |   Yes    | Display width (px)  |
+| `height`  | `number`     |   Yes    | Display height (px) |
+| `onClick` | `() => void` |    No    | Click handler       |
+
+### `{ type: "element" }` — DOM Element (DOM)
+
+```ts
+const el = document.createElement("div");
+el.textContent = "Hello";
+// ...
+{ type: "element", element: el, onClick: () => el.classList.toggle("active") }
+```
+
+| Field     | Type          | Required | Description                         |
+| --------- | ------------- | :------: | ----------------------------------- |
+| `element` | `HTMLElement` |   Yes    | Any DOM element (appended as child) |
+| `onClick` | `() => void`  |    No    | Click handler                       |
 
 ## API
 

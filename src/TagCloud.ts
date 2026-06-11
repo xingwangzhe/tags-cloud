@@ -560,6 +560,9 @@ export class TagCloud {
       this.#rotateX((this.#opts.spinX + this.#velX) * revX);
       this.#velY *= decay;
       this.#velX *= decay;
+      // 惯性死区：速度衰减到阈值以下直接归零，消除"永不停息"的微抖
+      if (Math.abs(this.#velY) < 1e-4) this.#velY = 0;
+      if (Math.abs(this.#velX) < 1e-4) this.#velX = 0;
     }
 
     // 四元数构造旋转矩阵
@@ -584,10 +587,14 @@ export class TagCloud {
       const per = d2 / (d2 + rz);
       const alpha = Math.min(1, Math.max(0, per * per - 0.25));
 
+      // 取整到 0.5px 消除 Canvas 亚像素抗锯齿抖动
+      const px = Math.round((cx + rx * per) * 2) / 2;
+      const py = Math.round((cy + ry * per) * 2) / 2;
+
       projected.push({
         item: p.item,
-        x: cx + rx * per,
-        y: cy + ry * per,
+        x: px,
+        y: py,
         z: rz,
         scale: per,
         alpha,

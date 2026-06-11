@@ -1,0 +1,80 @@
+name: Release
+
+on:
+  # 推送 tag（v1.0.0 格式）时自动触发
+  push:
+    tags:
+      - 'v*'
+  # 手动触发：留空则自动读取 package.json 的版本号
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '版本号（留空则使用 package.json 中的版本）'
+        required: false
+        type: string
+      dry-run:
+        description: '仅构建不发布'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - run: bun install --frozen-lockfile
+
+      - run: bun run build
+
+      # 确定版本号：tag 触发 → 从 ref 提取；手动触发有输入 → 用输入；否则读 package.json
+      - name: Resolve version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            TAG="${{ github.ref_name }}"
+            VER="${TAG#v}"
+          elif [ -n "${{ inputs.version }}" ]; then
+            VER="${{ inputs.version }}"
+          else
+            VER="$(node -p "require('./package.json').version")"
+          fi
+          echo "version=$VER" >> "$GITHUB_OUTPUT"
+          echo "Resolved version: $VER"
+
+      # 将确定的版本号写回 package.json
+      - name: Apply version
+        run: |
+          node -e "
+            const p = require('./package.json');
+            p.version = '${{ steps.version.outputs.version }}';
+            require('fs').writeFileSync('package.json', JSON.stringify(p, null, 2) + '\n');
+          "
+
+      - name: Dry-run check
+        if: inputs.dry-run == true
+        run: |
+          bun publish --dry-run --access public
+          echo "✅ Dry-run passed (not publishing)"
+
+      - name: Publish to npm
+        if: inputs.dry-run != true
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+          bun publish --access public
+
+      - name: Create GitHub Release
+        if: inputs.dry-run != true
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          generate_release_notes: true

@@ -1,4 +1,4 @@
-import { TagCloud } from "../src/index.ts";
+import { TagCloud } from "./src/index.ts";
 
 // ── 响应式断点常量 / Responsive breakpoint constants
 const MOBILE_BREAKPOINT = 768;

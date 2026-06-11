@@ -60,36 +60,81 @@ const linkTags = links.map((l) => ({
 // ── 多模态标签云 ──
 const cloud = new TagCloud(document.getElementById("cloud")!, {
   tags: [
+    // ── HTML 卡片 ──
     {
       html: '<div style="display:inline-flex;align-items:center;gap:10px;padding:6px 14px 6px 6px;border-radius:99px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);white-space:nowrap;cursor:pointer"><img src="https://xingwangzhe.fun/avatar.webp" width="32" height="32" style="border-radius:50%" alt="xingwangzhe" /><span style="font-weight:600;font-size:13px;color:#fff">xingwangzhe</span><span style="font-size:11px;color:rgba(255,255,255,0.5)">@GitHub</span></div>',
       type: "html",
-      onClick: () => {
-        window.open("https://github.com/xingwangzhe", "_blank");
-      },
+      onClick: () => window.open("https://github.com/xingwangzhe", "_blank"),
     },
+    // ── 外部图片 ──
     {
-      height: 40,
-      src: "https://xingwangzhe.fun/avatar.webp",
       type: "image",
+      src: "https://xingwangzhe.fun/avatar.webp",
       width: 40,
-      onClick: () => {
-        window.open("https://github.com/xingwangzhe", "_blank");
-      },
+      height: 40,
+      onClick: () => window.open("https://xingwangzhe.fun", "_blank"),
     },
     {
-      height: 68,
-      src: "https://clipqr.needhelp.icu/%E6%BC%94%E7%A4%BA%E8%A7%86%E9%A2%91.mp4",
-      type: "video",
-      width: 120,
+      type: "image",
+      src: "https://raw.githubusercontent.com/github/explore/main/topics/typescript/typescript.png",
+      width: 40,
+      height: 40,
+      onClick: () => window.open("https://www.typescriptlang.org/", "_blank"),
     },
+    {
+      type: "image",
+      src: "https://raw.githubusercontent.com/github/explore/main/topics/rust/rust.png",
+      width: 40,
+      height: 40,
+      onClick: () => window.open("https://www.rust-lang.org/", "_blank"),
+    },
+    // ── SVG 图标 ──
+    {
+      type: "svg",
+      content:
+        '<svg viewBox="0 0 24 24" fill="#FFD600"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>',
+      width: 32,
+      height: 32,
+    },
+    {
+      type: "svg",
+      content:
+        '<svg viewBox="0 0 24 24" fill="#FF3D00"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>',
+      width: 28,
+      height: 28,
+    },
+    // ── 视频 ──
+    {
+      type: "video",
+      src: "https://clipqr.needhelp.icu/%E6%BC%94%E7%A4%BA%E8%A7%86%E9%A2%91.mp4",
+      width: 120,
+      height: 68,
+    },
+    // ── 链接标签 ──
     ...linkTags,
+    // ── 纯文本 ──
     "3D",
     "ES6",
     "Node.js",
     "Linux",
+    "macOS",
+    "Windows",
     "Fibonacci",
     "Quaternion",
     "Arcball",
+    "Matrix",
+    "Rodrigues",
+    "Euler",
+    "Decay",
+    "Inertia",
+    "Canvas2D",
+    "Offscreen",
+    "Isometry",
+    "Raycast",
+    "Pipeline",
+    "Gzip ~3KB",
+    "Zero Deps",
+    "O(N)",
   ],
   height: isMobile ? MOBILE_HEIGHT : 0,
   radius: isMobile ? MOBILE_RADIUS : DESKTOP_RADIUS,

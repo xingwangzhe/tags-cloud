@@ -35,3 +35,12 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 vendor/
 test/index.html
 out/
+
+# Codegraph — SQLite index (auto-generated, must NOT be committed)
+.codegraph/
+
+# Claude Code — session files (auto-generated)
+.claude/
+
+# npm — local auth config (may contain tokens)
+.npmrc

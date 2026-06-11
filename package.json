@@ -40,14 +40,15 @@
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "prepare": "simple-git-hooks",
-    "precommit": "bun run lint && bun run fmt:check",
+    "precommit": "bun run lint && bun run fmt:check && bun test",
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
     "oxfmt": "^0.54.0",
     "oxlint": "^1.69.0",
     "simple-git-hooks": "^2.13.1",
-    "vite": "^8.0.16"
+    "vite": "^8.0.16",
+    "vitest": "^4.1.8"
   },
   "simple-git-hooks": {
     "pre-commit": "bun run lint && bun run fmt:check"

@@ -35,44 +35,46 @@ new TagCloud(document.getElementById("cloud"), {
   ],
   radius: 300,
   spinY: 0.15,
-  onTagClick(item) { console.log("clicked", item); },
+  onTagClick(item) {
+    console.log("clicked", item);
+  },
 });
 ```
 
 ## Tag Types
 
-| TagItem | Renderer | Example |
-|---|---|---|
-| `string` | Canvas | `"TypeScript"` |
-| `{ type:"image" }` | Canvas | `{ type:"image", src, width, height, onClick? }` |
-| `{ type:"svg" }` | DOM | `{ type:"svg", content, width, height, onClick? }` |
-| `{ type:"html" }` | DOM | `{ type:"html", html, onClick? }` |
-| `{ type:"video" }` | DOM | `{ type:"video", src, width, height, onClick? }` |
-| `{ type:"element" }` | DOM | `{ type:"element", element, onClick? }` |
+| TagItem              | Renderer | Example                                            |
+| -------------------- | -------- | -------------------------------------------------- |
+| `string`             | Canvas   | `"TypeScript"`                                     |
+| `{ type:"image" }`   | Canvas   | `{ type:"image", src, width, height, onClick? }`   |
+| `{ type:"svg" }`     | DOM      | `{ type:"svg", content, width, height, onClick? }` |
+| `{ type:"html" }`    | DOM      | `{ type:"html", html, onClick? }`                  |
+| `{ type:"video" }`   | DOM      | `{ type:"video", src, width, height, onClick? }`   |
+| `{ type:"element" }` | DOM      | `{ type:"element", element, onClick? }`            |
 
 ## API
 
 ### `new TagCloud(container, options)`
 
-| Option | Type | Default | Description |
-|---|---|---|---|
-| `tags` | `TagItem[]` | — | Tag list (string or object) |
-| `radius` | `number` | `300` | Sphere radius (px) |
-| `width` | `number` | `0` | Canvas width in px (0 = auto) |
-| `height` | `number` | `0` | Canvas height in px (0 = auto) |
-| `spinY` | `number` | `0` | Y-axis spin: +right -left 0=off |
-| `spinX` | `number` | `0` | X-axis spin: +down -up 0=off |
-| `reverse` | `boolean` | `false` | Reverse both drag axes |
-| `reverseX` | `boolean` | `false` | Reverse X-axis drag only |
-| `reverseY` | `boolean` | `false` | Reverse Y-axis drag only |
-| `inertiaDecay` | `number` | `0.96` | Inertia decay per frame |
-| `dragSensitivity` | `number` | `3` | Drag sensitivity multiplier |
-| `fontFamily` | `string` | `system-ui` | Font family |
-| `fontSize` | `number` | `14` | Base font size (px) |
-| `color` | `string` | `#fff` | Text color |
-| `videoFullscreen` | `boolean` | `true` | Video tags click to fullscreen |
-| `onTagClick` | `(item) => void` | — | Global click callback for all tags |
-| `onRender` | `(tags) => void` | built-in | Custom render callback |
+| Option            | Type             | Default     | Description                        |
+| ----------------- | ---------------- | ----------- | ---------------------------------- |
+| `tags`            | `TagItem[]`      | —           | Tag list (string or object)        |
+| `radius`          | `number`         | `300`       | Sphere radius (px)                 |
+| `width`           | `number`         | `0`         | Canvas width in px (0 = auto)      |
+| `height`          | `number`         | `0`         | Canvas height in px (0 = auto)     |
+| `spinY`           | `number`         | `0`         | Y-axis spin: +right -left 0=off    |
+| `spinX`           | `number`         | `0`         | X-axis spin: +down -up 0=off       |
+| `reverse`         | `boolean`        | `false`     | Reverse both drag axes             |
+| `reverseX`        | `boolean`        | `false`     | Reverse X-axis drag only           |
+| `reverseY`        | `boolean`        | `false`     | Reverse Y-axis drag only           |
+| `inertiaDecay`    | `number`         | `0.96`      | Inertia decay per frame            |
+| `dragSensitivity` | `number`         | `3`         | Drag sensitivity multiplier        |
+| `fontFamily`      | `string`         | `system-ui` | Font family                        |
+| `fontSize`        | `number`         | `14`        | Base font size (px)                |
+| `color`           | `string`         | `#fff`      | Text color                         |
+| `videoFullscreen` | `boolean`        | `true`      | Video tags click to fullscreen     |
+| `onTagClick`      | `(item) => void` | —           | Global click callback for all tags |
+| `onRender`        | `(tags) => void` | built-in    | Custom render callback             |
 
 ### Instance Methods
 

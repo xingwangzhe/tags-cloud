@@ -10,11 +10,11 @@
     "tags"
   ],
   "license": "MIT",
+  "author": "xingwangzhe",
   "repository": {
     "type": "git",
     "url": "https://github.com/xingwangzhe/tags-cloud"
   },
-  "author": "xingwangzhe",
   "files": [
     "dist",
     "src/core",

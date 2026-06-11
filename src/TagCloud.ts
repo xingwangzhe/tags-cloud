@@ -360,7 +360,9 @@ export class TagCloud {
       up: () => {
         this.#dragging = false;
         this.#container.style.cursor = "grab";
-        this.#dragTimer = window.setTimeout(() => { this.#dragged = false; }, 0);
+        this.#dragTimer = window.setTimeout(() => {
+          this.#dragged = false;
+        }, 0);
       },
     };
 
@@ -418,10 +420,14 @@ export class TagCloud {
   #canvasRender = (tags: TagData[]): void => {
     if (!this.#canvas) {
       const c = document.createElement("canvas");
-      if (this.#opts.width) { c.style.width = `${this.#opts.width}px`; this.#container.style.width = `${this.#opts.width}px`; }
-      else c.style.width = "100%";
-      if (this.#opts.height) { c.style.height = `${this.#opts.height}px`; this.#container.style.height = `${this.#opts.height}px`; }
-      else c.style.height = "100%";
+      if (this.#opts.width) {
+        c.style.width = `${this.#opts.width}px`;
+        this.#container.style.width = `${this.#opts.width}px`;
+      } else c.style.width = "100%";
+      if (this.#opts.height) {
+        c.style.height = `${this.#opts.height}px`;
+        this.#container.style.height = `${this.#opts.height}px`;
+      } else c.style.height = "100%";
       this.#container.appendChild(c);
       this.#canvas = c;
       this.#ctx = c.getContext("2d")!;
@@ -540,8 +546,12 @@ export class TagCloud {
       if (this.#opts.videoFullscreen) {
         el.addEventListener("click", () => {
           const v = el.querySelector("video")!;
-          if (document.fullscreenElement) { document.exitFullscreen(); }
-          else { v.play(); v.requestFullscreen(); }
+          if (document.fullscreenElement) {
+            document.exitFullscreen();
+          } else {
+            v.play();
+            v.requestFullscreen();
+          }
         });
       }
     }

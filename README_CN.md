@@ -35,44 +35,46 @@ new TagCloud(document.getElementById("cloud"), {
   ],
   radius: 300,
   spinY: 0.15,
-  onTagClick(item) { console.log("clicked", item); },
+  onTagClick(item) {
+    console.log("clicked", item);
+  },
 });
 ```
 
 ## 标签类型
 
-| TagItem | 渲染 | 示例 |
-|---|---|---|
-| `string` | Canvas | `"TypeScript"` |
-| `{ type:"image" }` | Canvas | `{ type:"image", src, width, height, onClick? }` |
-| `{ type:"svg" }` | DOM | `{ type:"svg", content, width, height, onClick? }` |
-| `{ type:"html" }` | DOM | `{ type:"html", html, onClick? }` |
-| `{ type:"video" }` | DOM | `{ type:"video", src, width, height, onClick? }` |
-| `{ type:"element" }` | DOM | `{ type:"element", element, onClick? }` |
+| TagItem              | 渲染   | 示例                                               |
+| -------------------- | ------ | -------------------------------------------------- |
+| `string`             | Canvas | `"TypeScript"`                                     |
+| `{ type:"image" }`   | Canvas | `{ type:"image", src, width, height, onClick? }`   |
+| `{ type:"svg" }`     | DOM    | `{ type:"svg", content, width, height, onClick? }` |
+| `{ type:"html" }`    | DOM    | `{ type:"html", html, onClick? }`                  |
+| `{ type:"video" }`   | DOM    | `{ type:"video", src, width, height, onClick? }`   |
+| `{ type:"element" }` | DOM    | `{ type:"element", element, onClick? }`            |
 
 ## API
 
 ### `new TagCloud(container, options)`
 
-| 参数 | 类型 | 默认 | 说明 |
-|---|---|---|---|
-| `tags` | `TagItem[]` | — | 标签列表（字符串或对象） |
-| `radius` | `number` | `300` | 球面半径（px） |
-| `width` | `number` | `0` | Canvas 宽度（0=自适应） |
-| `height` | `number` | `0` | Canvas 高度（0=自适应） |
-| `spinY` | `number` | `0` | Y轴自旋 +右/-左/0关 |
-| `spinX` | `number` | `0` | X轴自旋 +下/-上/0关 |
-| `reverse` | `boolean` | `false` | 全轴反转拖拽 |
-| `reverseX` | `boolean` | `false` | 反转上下拖拽 |
-| `reverseY` | `boolean` | `false` | 反转左右拖拽 |
-| `inertiaDecay` | `number` | `0.96` | 惯性衰减系数 |
-| `dragSensitivity` | `number` | `3` | 拖拽灵敏度 |
-| `fontFamily` | `string` | `system-ui` | 字体 |
-| `fontSize` | `number` | `14` | 基础字号 |
-| `color` | `string` | `#fff` | 文字颜色 |
-| `videoFullscreen` | `boolean` | `true` | 视频点击全屏 |
-| `onTagClick` | `(item) => void` | — | 全局点击回调 |
-| `onRender` | `(tags) => void` | 内置Canvas | 自定义渲染 |
+| 参数              | 类型             | 默认        | 说明                     |
+| ----------------- | ---------------- | ----------- | ------------------------ |
+| `tags`            | `TagItem[]`      | —           | 标签列表（字符串或对象） |
+| `radius`          | `number`         | `300`       | 球面半径（px）           |
+| `width`           | `number`         | `0`         | Canvas 宽度（0=自适应）  |
+| `height`          | `number`         | `0`         | Canvas 高度（0=自适应）  |
+| `spinY`           | `number`         | `0`         | Y轴自旋 +右/-左/0关      |
+| `spinX`           | `number`         | `0`         | X轴自旋 +下/-上/0关      |
+| `reverse`         | `boolean`        | `false`     | 全轴反转拖拽             |
+| `reverseX`        | `boolean`        | `false`     | 反转上下拖拽             |
+| `reverseY`        | `boolean`        | `false`     | 反转左右拖拽             |
+| `inertiaDecay`    | `number`         | `0.96`      | 惯性衰减系数             |
+| `dragSensitivity` | `number`         | `3`         | 拖拽灵敏度               |
+| `fontFamily`      | `string`         | `system-ui` | 字体                     |
+| `fontSize`        | `number`         | `14`        | 基础字号                 |
+| `color`           | `string`         | `#fff`      | 文字颜色                 |
+| `videoFullscreen` | `boolean`        | `true`      | 视频点击全屏             |
+| `onTagClick`      | `(item) => void` | —           | 全局点击回调             |
+| `onRender`        | `(tags) => void` | 内置Canvas  | 自定义渲染               |
 
 ### 实例方法
 

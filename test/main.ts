@@ -3,9 +3,20 @@ import { TagCloud } from "../src/index.ts";
 // ── 多模态标签云 ──
 new TagCloud(document.getElementById("cloud")!, {
   tags: [
-    { type: "image", src: "https://xingwangzhe.fun/avatar.webp", width: 40, height: 40, onClick: () => window.open("https://github.com/xingwangzhe", "_blank") },
-    { type: "video", src: "https://clipqr.needhelp.icu/%E6%BC%94%E7%A4%BA%E8%A7%86%E9%A2%91.mp4", width: 120, height: 68 },
-"TypeScript",
+    {
+      type: "image",
+      src: "https://xingwangzhe.fun/avatar.webp",
+      width: 40,
+      height: 40,
+      onClick: () => window.open("https://github.com/xingwangzhe", "_blank"),
+    },
+    {
+      type: "video",
+      src: "https://clipqr.needhelp.icu/%E6%BC%94%E7%A4%BA%E8%A7%86%E9%A2%91.mp4",
+      width: 120,
+      height: 68,
+    },
+    "TypeScript",
     "Canvas",
     "3D",
     "WebGL",

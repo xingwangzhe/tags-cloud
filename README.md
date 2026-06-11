@@ -6,11 +6,11 @@
 
 ## Features
 
-- **Multi-modal** — text, images, SVG, HTML, video, Web Components
+- **Multi-modal** — text, link, images, SVG, HTML, video, Web Components
 - **Fibonacci sphere distribution** — tags evenly placed on 3D sphere
 - **Arcball interaction** — drag to rotate with quaternion-based Shoemake arcball
 - **Auto-spin** — configurable per-axis spin (X/Y) with independent speed and direction
-- **TypeScript** — fully typed
+- **TypeScript** — fully typed, zero tsc errors
 - **~3KB** gzipped
 
 ## Install
@@ -27,17 +27,15 @@ import { TagCloud } from "@xingwangzhe/tags-cloud";
 new TagCloud(document.getElementById("cloud"), {
   tags: [
     "plain text",
+    { type: "link", text: "TypeScript", url: "https://www.typescriptlang.org/" },
     { type: "image", src: "/avatar.webp", width: 40, height: 40, onClick: () => open("/profile") },
-    { type: "element", element: myComponent, onClick: () => console.log("clicked") },
     { type: "svg", content: "<svg>...</svg>", width: 48, height: 48 },
     { type: "html", html: "<b>bold</b>" },
     { type: "video", src: "/clip.mp4", width: 120, height: 68 },
+    { type: "element", element: myComponent },
   ],
   radius: 300,
   spinY: 0.15,
-  onTagClick(item) {
-    console.log("clicked", item);
-  },
 });
 ```
 
@@ -46,6 +44,7 @@ new TagCloud(document.getElementById("cloud"), {
 | TagItem              | Renderer | Example                                            |
 | -------------------- | -------- | -------------------------------------------------- |
 | `string`             | Canvas   | `"TypeScript"`                                     |
+| `{ type:"link" }`    | Canvas   | `{ type:"link", text, url, onClick? }`             |
 | `{ type:"image" }`   | Canvas   | `{ type:"image", src, width, height, onClick? }`   |
 | `{ type:"svg" }`     | DOM      | `{ type:"svg", content, width, height, onClick? }` |
 | `{ type:"html" }`    | DOM      | `{ type:"html", html, onClick? }`                  |
@@ -91,8 +90,8 @@ cloud.destroy();
 bun install
 bun run build       # vite build → dist/
 bun run build:demo  # vite build → out/ (deployable HTML)
-bun run lint        # oxlint
-bun run fmt         # oxfmt
+bun run lint        # oxlint (zero-error config)
+bun run fmt         # oxfmt (auto-formatted)
 ```
 
 ## Credits

@@ -6,11 +6,11 @@
 
 ## 特性
 
-- **多模态** — 文字、图片、SVG、HTML、视频、Web Component
+- **多模态** — 文本、链接、图片、SVG、HTML、视频、Web Component
 - **斐波那契球面分布** — 标签均匀分布在 3D 球面
 - **Arcball 交互** — Shoemake 四元数弧球拖拽旋转
 - **自旋** — 可配置分轴自旋（X/Y），独立速度和方向
-- **TypeScript** — 全类型安全
+- **TypeScript** — 全类型安全，零 tsc 错误
 - **~3KB** gzip
 
 ## 安装
@@ -26,18 +26,16 @@ import { TagCloud } from "@xingwangzhe/tags-cloud";
 
 new TagCloud(document.getElementById("cloud"), {
   tags: [
-    "plain text",
+    "纯文本",
+    { type: "link", text: "TypeScript", url: "https://www.typescriptlang.org/" },
     { type: "image", src: "/avatar.webp", width: 40, height: 40, onClick: () => open("/profile") },
-    { type: "element", element: myComponent, onClick: () => console.log("clicked") },
     { type: "svg", content: "<svg>...</svg>", width: 48, height: 48 },
-    { type: "html", html: "<b>bold</b>" },
+    { type: "html", html: "<b>粗体</b>" },
     { type: "video", src: "/clip.mp4", width: 120, height: 68 },
+    { type: "element", element: myComponent },
   ],
   radius: 300,
   spinY: 0.15,
-  onTagClick(item) {
-    console.log("clicked", item);
-  },
 });
 ```
 
@@ -46,6 +44,7 @@ new TagCloud(document.getElementById("cloud"), {
 | TagItem              | 渲染   | 示例                                               |
 | -------------------- | ------ | -------------------------------------------------- |
 | `string`             | Canvas | `"TypeScript"`                                     |
+| `{ type:"link" }`    | Canvas | `{ type:"link", text, url, onClick? }`             |
 | `{ type:"image" }`   | Canvas | `{ type:"image", src, width, height, onClick? }`   |
 | `{ type:"svg" }`     | DOM    | `{ type:"svg", content, width, height, onClick? }` |
 | `{ type:"html" }`    | DOM    | `{ type:"html", html, onClick? }`                  |
@@ -91,8 +90,8 @@ cloud.destroy();
 bun install
 bun run build       # vite build → dist/
 bun run build:demo  # vite build → out/ (可部署的 HTML)
-bun run lint        # oxlint
-bun run fmt         # oxfmt
+bun run lint        # oxlint (零错误配置)
+bun run fmt         # oxfmt (自动格式化)
 ```
 
 ## 致谢

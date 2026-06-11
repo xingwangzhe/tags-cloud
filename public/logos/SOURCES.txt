@@ -1,0 +1,10 @@
+These logo images are downloaded from GitHub Explore topics
+via jsDelivr CDN for offline/demo use.
+
+Source: https://github.com/github/explore/tree/main/topics
+License: CC-BY-4.0 (Creative Commons Attribution 4.0 International)
+
+Each file is named after the technology and sourced from:
+  https://cdn.jsdelivr.net/gh/github/explore@main/topics/<name>/<name>.png
+
+Downloaded: 2026-06-11

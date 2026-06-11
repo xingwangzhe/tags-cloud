@@ -11,21 +11,17 @@ const MOBILE_PADDING = 32;
 
 const isMobile = innerWidth < MOBILE_BREAKPOINT;
 
-// ── Logo 图片（jsDelivr CDN 代理 GitHub Explore PNG，全球快速 + Canvas 友好）
+// ── Logo 图片（jsDelivr CDN + GitHub Explore PNG，全球快速）
 const EXPLORE = "https://cdn.jsdelivr.net/gh/github/explore@main/topics";
-const toImg = (slug: string, url: string): TagItem => ({
-  type: "image",
+const toImg = (slug: string, url: string) => ({
+  type: "image" as const,
   src: `${EXPLORE}/${slug}/${slug}.png`,
   width: 40,
   height: 40,
   onClick: () => window.open(url, "_blank"),
 });
 
-type TagItem =
-  | { type: "image"; src: string; width: number; height: number; onClick?: () => void }
-  | { type: "link"; text: string; url: string };
-
-const logoImages: TagItem[] = [
+const logoImages = [
   toImg("typescript", "https://www.typescriptlang.org/"),
   toImg("rust", "https://www.rust-lang.org/"),
   toImg("bun", "https://bun.sh/"),
@@ -41,7 +37,7 @@ const logoImages: TagItem[] = [
 ];
 
 // ── 文字链接（link 类型：Canvas 文本 + 自带点击跳转，零额外开销）
-const linkItems: TagItem[] = [
+const linkItems = [
   { type: "link", text: "Zig", url: "https://ziglang.org/" },
   { type: "link", text: "Astro", url: "https://astro.build/" },
   { type: "link", text: "Solid", url: "https://www.solidjs.com/" },

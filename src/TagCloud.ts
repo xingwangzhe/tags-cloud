@@ -531,8 +531,14 @@ export class TagCloud {
           img.src = t.item.src;
           this.#imageCache.set(t.item.src, img);
         }
-        // 跳过未就绪或损坏的图片，避免 Canvas 抛异常
-        if (!img.complete || img.naturalWidth === 0) {
+        // 图片未就绪：跳过本帧，下帧自动重试
+        if (!img.complete) {
+          canvasTags.push({ item: t.item, x: t.x, y: t.y, scale: t.scale });
+          continue;
+        }
+        // 图片加载失败（404 等）：清除缓存，下帧创建新 Image 重载
+        if (img.naturalWidth === 0) {
+          this.#imageCache.delete(t.item.src);
           canvasTags.push({ item: t.item, x: t.x, y: t.y, scale: t.scale });
           continue;
         }

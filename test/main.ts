@@ -4,6 +4,11 @@ import { TagCloud } from "../src/index.ts";
 new TagCloud(document.getElementById("cloud")!, {
   tags: [
     {
+      type: "html",
+      html: '<div style="display:inline-flex;align-items:center;gap:10px;padding:6px 14px 6px 6px;border-radius:99px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);white-space:nowrap;cursor:pointer"><img src="https://xingwangzhe.fun/avatar.webp" width="32" height="32" style="border-radius:50%" alt="xingwangzhe" /><span style="font-weight:600;font-size:13px;color:#fff">xingwangzhe</span><span style="font-size:11px;color:rgba(255,255,255,0.5)">@GitHub</span></div>',
+      onClick: () => window.open("https://github.com/xingwangzhe", "_blank"),
+    },
+    {
       type: "image",
       src: "https://xingwangzhe.fun/avatar.webp",
       width: 40,

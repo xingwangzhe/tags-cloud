@@ -210,6 +210,9 @@ export class TagCloud {
   // 文本离屏缓存 — 预渲染文本到位图，避免每帧 ctx.font 变化导致字体重光栅化微颤
   #textCache: Map<string, HTMLCanvasElement> = new Map();
 
+  // 图片缓存 — 复用 Image 元素，避免每帧 new Image() + 设 src 造成重复请求
+  #imageCache: Map<string, HTMLImageElement> = new Map();
+
   constructor(container: HTMLElement, options: TagCloudOptions) {
     this.#container = container;
     this.#opts = { ...DEFAULTS, ...options } as ResolvedOptions;
@@ -272,6 +275,9 @@ export class TagCloud {
     const size = 1.5 * this.#radius;
     const positions = fibonacciSphere(tags.length, size / 2);
     this.#points = positions.map((p, i) => ({ ...p, item: tags[i]! }));
+    // 清理图片缓存，确保新标签的图片能正确加载
+    this.#imageCache.clear();
+    this.#textCache.clear();
   }
 
   #bindEvents(): void {
@@ -413,10 +419,6 @@ export class TagCloud {
     const canvasTags: { item: TagItem; x: number; y: number; scale: number }[] = [];
     const currentDoms = new Set<TagItem>();
 
-    // 先加载需要的图片
-    const imageCache = new Map<string, HTMLImageElement>();
-    const pendingImages: Promise<void>[] = [];
-
     for (const t of tags) {
       if (typeof t.item === "string") {
         // 文本标签 — 离屏预渲染 + drawImage 缩放，避免逐帧 fillText 字体重光栅化
@@ -451,17 +453,12 @@ export class TagCloud {
         ctx.restore();
         canvasTags.push({ item: t.item, x: t.x, y: t.y, scale: t.scale });
       } else if (t.item.type === "image") {
-        // 图片标签 — Canvas drawImage()
-        let img = imageCache.get(t.item.src);
+        // 图片标签 — Canvas drawImage()，复用实例级缓存避免每帧 new Image()
+        let img = this.#imageCache.get(t.item.src);
         if (!img) {
           img = new Image();
           img.src = t.item.src;
-          imageCache.set(t.item.src, img);
-          pendingImages.push(
-            new Promise((r) => {
-              img!.onload = () => r();
-            }),
-          );
+          this.#imageCache.set(t.item.src, img);
         }
         const { width: iw, height: ih } = t.item;
         const sw = iw * t.scale;

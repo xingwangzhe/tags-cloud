@@ -12,32 +12,46 @@ const MOBILE_PADDING = 32;
 const isMobile = innerWidth < MOBILE_BREAKPOINT;
 
 // ── 外部链接（link 类型：Canvas 文本 + 自带点击跳转，零额外开销）
+// ── GitHub Explore topic logos (toImg helper)
+const T = "https://raw.githubusercontent.com/github/explore/main/topics";
+const toImg = (slug: string, url: string) => ({
+  type: "image" as const,
+  src: `${T}/${slug}/${slug}.png`,
+  width: 40,
+  height: 40,
+  onClick: () => window.open(url, "_blank"),
+});
+
+const logoImages = [
+  toImg("bun", "https://bun.sh/"),
+  toImg("react", "https://react.dev/"),
+  toImg("vue", "https://vuejs.org/"),
+  toImg("svelte", "https://svelte.dev/"),
+  toImg("docker", "https://www.docker.com/"),
+  toImg("graphql", "https://graphql.org/"),
+  toImg("postgresql", "https://www.postgresql.org/"),
+  toImg("redis", "https://redis.io/"),
+  toImg("deno", "https://deno.com/"),
+  toImg("vite", "https://vite.dev/"),
+  toImg("astro", "https://astro.build/"),
+  toImg("webassembly", "https://webassembly.org/"),
+];
+
+// ── 文字链接（logo 已覆盖的移除，避免重复）──
 const links: { text: string; url: string }[] = [
   { text: "TypeScript", url: "https://www.typescriptlang.org/" },
   { text: "Rust", url: "https://www.rust-lang.org/" },
   { text: "Zig", url: "https://ziglang.org/" },
-  { text: "Bun", url: "https://bun.sh/" },
-  { text: "Vite", url: "https://vite.dev/" },
-  { text: "Astro", url: "https://astro.build/" },
-  { text: "Vue", url: "https://vuejs.org/" },
-  { text: "React", url: "https://react.dev/" },
-  { text: "Svelte", url: "https://svelte.dev/" },
   { text: "Solid", url: "https://www.solidjs.com/" },
   { text: "Qwik", url: "https://qwik.dev/" },
-  { text: "Deno", url: "https://deno.com/" },
-  { text: "Docker", url: "https://www.docker.com/" },
   { text: "Nix", url: "https://nixos.org/" },
   { text: "Git", url: "https://git-scm.com/" },
   { text: "GitHub", url: "https://github.com/" },
-  { text: "GraphQL", url: "https://graphql.org/" },
-  { text: "Postgres", url: "https://www.postgresql.org/" },
   { text: "SQLite", url: "https://www.sqlite.org/" },
-  { text: "Redis", url: "https://redis.io/" },
   { text: "WebGL", url: "https://www.khronos.org/webgl/" },
   { text: "WebGPU", url: "https://www.w3.org/TR/webgpu/" },
   { text: "WebRTC", url: "https://webrtc.org/" },
   { text: "WebSocket", url: "https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API" },
-  { text: "WASM", url: "https://webassembly.org/" },
   { text: "Canvas", url: "https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API" },
   { text: "CSS", url: "https://developer.mozilla.org/en-US/docs/Web/CSS" },
   { text: "SVG", url: "https://developer.mozilla.org/en-US/docs/Web/SVG" },
@@ -110,6 +124,8 @@ const cloud = new TagCloud(document.getElementById("cloud")!, {
       width: 120,
       height: 68,
     },
+    // ── Logo 图片 ──
+    ...logoImages,
     // ── 链接标签 ──
     ...linkTags,
     // ── 纯文本 ──

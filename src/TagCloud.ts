@@ -531,6 +531,11 @@ export class TagCloud {
           img.src = t.item.src;
           this.#imageCache.set(t.item.src, img);
         }
+        // 跳过未就绪或损坏的图片，避免 Canvas 抛异常
+        if (!img.complete || img.naturalWidth === 0) {
+          canvasTags.push({ item: t.item, x: t.x, y: t.y, scale: t.scale });
+          continue;
+        }
         const { width: iw, height: ih } = t.item;
         const sw = iw * t.scale;
         const sh = ih * t.scale;

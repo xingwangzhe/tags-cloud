@@ -12,11 +12,11 @@ const MOBILE_PADDING = 32;
 const isMobile = innerWidth < MOBILE_BREAKPOINT;
 
 // ── 外部链接（link 类型：Canvas 文本 + 自带点击跳转，零额外开销）
-// ── GitHub Explore topic logos (toImg helper)
-const T = "https://raw.githubusercontent.com/github/explore/main/topics";
+// ── Logo 图片（jsDelivr CDN + Devicon，国内外均快速）
+const CDN = "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons";
 const toImg = (slug: string, url: string) => ({
   type: "image" as const,
-  src: `${T}/${slug}/${slug}.png`,
+  src: `${CDN}/${slug}/${slug}-original.svg`,
   width: 40,
   height: 40,
   onClick: () => window.open(url, "_blank"),
@@ -25,16 +25,16 @@ const toImg = (slug: string, url: string) => ({
 const logoImages = [
   toImg("bun", "https://bun.sh/"),
   toImg("react", "https://react.dev/"),
-  toImg("vue", "https://vuejs.org/"),
+  toImg("vuejs", "https://vuejs.org/"),
   toImg("svelte", "https://svelte.dev/"),
   toImg("docker", "https://www.docker.com/"),
   toImg("graphql", "https://graphql.org/"),
   toImg("postgresql", "https://www.postgresql.org/"),
   toImg("redis", "https://redis.io/"),
-  toImg("deno", "https://deno.com/"),
-  toImg("vite", "https://vite.dev/"),
+  toImg("denojs", "https://deno.com/"),
+  toImg("vitejs", "https://vite.dev/"),
   toImg("astro", "https://astro.build/"),
-  toImg("webassembly", "https://webassembly.org/"),
+  toImg("wasm", "https://webassembly.org/"),
 ];
 
 // ── 文字链接（logo 已覆盖的移除，避免重复）──
@@ -90,14 +90,14 @@ const cloud = new TagCloud(document.getElementById("cloud")!, {
     },
     {
       type: "image",
-      src: "https://raw.githubusercontent.com/github/explore/main/topics/typescript/typescript.png",
+      src: `${CDN}/typescript/typescript-original.svg`,
       width: 40,
       height: 40,
       onClick: () => window.open("https://www.typescriptlang.org/", "_blank"),
     },
     {
       type: "image",
-      src: "https://raw.githubusercontent.com/github/explore/main/topics/rust/rust.png",
+      src: `${CDN}/rust/rust-original.svg`,
       width: 40,
       height: 40,
       onClick: () => window.open("https://www.rust-lang.org/", "_blank"),

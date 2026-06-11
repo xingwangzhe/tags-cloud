@@ -33,7 +33,6 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 # Finder (MacOS) folder config
 .DS_Store
 vendor/
-test/index.html
 out/
 
 # Codegraph — SQLite index (auto-generated, must NOT be committed)

@@ -44,18 +44,7 @@ const _rotatePoint = (p: Vec3, a: number, b: number): Vec3 => {
  * 批量旋转所有点
  * Rotate all points in batch
  */
-const _rotatePoints = (points: Vec3[], a: number, b: number): Vec3[] => {
-  const sinA = Math.sin(a);
-  const cosA = Math.cos(a);
-  const sinB = Math.sin(b);
-  const cosB = Math.cos(b);
-
-  return points.map((p) => {
-    const y1 = p.y * cosA + p.z * -sinA;
-    const z1 = p.y * sinA + p.z * cosA;
-    const x2 = p.x * cosB + z1 * sinB;
-    return { x: x2, y: y1, z: z1 * cosB - p.x * sinB };
-  });
-};
+const _rotatePoints = (points: Vec3[], a: number, b: number): Vec3[] =>
+  points.map((p) => _rotatePoint(p, a, b));
 
 export { _rotatePoint as rotatePoint, _rotatePoints as rotatePoints };

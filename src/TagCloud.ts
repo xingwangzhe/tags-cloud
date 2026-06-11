@@ -673,43 +673,67 @@ export class TagCloud {
       }
     }
 
-    // 四元数构造旋转矩阵
+    // 四元数构造旋转矩阵（预计算一次，复用于所有点）
     const { w, x, y, z } = this.#qNow;
-    const m00 = 1 - 2 * (y * y + z * z);
+    const yy = y * y;
+    const zz = z * z;
+    const xx = x * x;
+    const m00 = 1 - 2 * (yy + zz);
     const m01 = 2 * (x * y - w * z);
     const m02 = 2 * (x * z + w * y);
     const m10 = 2 * (x * y + w * z);
-    const m11 = 1 - 2 * (x * x + z * z);
+    const m11 = 1 - 2 * (xx + zz);
     const m12 = 2 * (y * z - w * x);
     const m20 = 2 * (x * z - w * y);
     const m21 = 2 * (y * z + w * x);
+    const m22 = 1 - 2 * (xx + yy);
 
     const d2 = this.#depth * 2;
-    const projected: TagData[] = [];
+    const points = this.#points;
+    const count = points.length;
+    const projected = Array.from<TagData>({ length: count });
 
-    for (const p of this.#points) {
+    for (let i = 0; i < count; i++) {
+      const p = points[i]!;
       const rx = m00 * p.x + m01 * p.y + m02 * p.z;
       const ry = m10 * p.x + m11 * p.y + m12 * p.z;
-      const rz = m20 * p.x + m21 * p.y + (1 - 2 * (x * x + y * y)) * p.z;
+      const rz = m20 * p.x + m21 * p.y + m22 * p.z;
 
       const per = d2 / (d2 + rz);
-      const alpha = Math.min(1, Math.max(0, per * per - 0.25));
+      const rawAlpha = per * per - 0.25;
+      let alpha = rawAlpha;
+      if (alpha < 0) {
+        alpha = 0;
+      } else if (alpha > 1) {
+        alpha = 1;
+      }
 
       // 取整到 0.5px 消除 Canvas 亚像素抗锯齿抖动
       const px = Math.round((cx + rx * per) * 2) / 2;
       const py = Math.round((cy + ry * per) * 2) / 2;
 
-      projected.push({
+      projected[i] = {
         item: p.item,
         x: px,
         y: py,
         z: rz,
         scale: per,
         alpha,
-      });
+      };
     }
 
-    this.#opts.onRender(projected.toSorted((a, b) => b.z - a.z));
+    // 插入排序：相邻帧 Z 值近乎有序，接近 O(N)
+    for (let j = 1; j < count; j++) {
+      const cur = projected[j]!;
+      let k = j - 1;
+      while (k >= 0 && projected[k]!.z > cur.z) {
+        projected[k + 1] = projected[k]!;
+        k--;
+      }
+      projected[k + 1] = cur;
+    }
+
+    this.#opts.onRender(projected);
   }
 }
 

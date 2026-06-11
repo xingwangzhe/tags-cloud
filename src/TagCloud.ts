@@ -186,9 +186,14 @@ export class TagCloud {
   #dragged = false;
   #vDown = { x: 0, y: 0, z: 0 };
 
+  // 容器中心（缓存，避免逐帧 getBoundingClientRect 亚像素波动导致纵向卡顿）
+  #cx = 0;
+  #cy = 0;
+
   // 内存
   #raf = 0;
   #container: HTMLElement;
+  #resizeObserver?: ResizeObserver;
   #handlers!: { down: EventListener; move: EventListener; up: EventListener };
 
   // 内置 Canvas
@@ -207,6 +212,21 @@ export class TagCloud {
     this.#opts = { ...DEFAULTS, ...options } as ResolvedOptions;
     this.#radius = this.#opts.radius;
     this.#depth = 2 * this.#radius;
+
+    // 初始化缓存中心点
+    const rect = container.getBoundingClientRect();
+    this.#cx = rect.width / 2;
+    this.#cy = rect.height / 2;
+
+    // 仅在容器尺寸真正变化时更新中心点，避免逐帧亚像素波动
+    this.#resizeObserver = new ResizeObserver((entries) => {
+      for (const e of entries) {
+        const r = e.contentRect;
+        this.#cx = r.width / 2;
+        this.#cy = r.height / 2;
+      }
+    });
+    this.#resizeObserver.observe(container);
 
     if (!this.#opts.onRender) {
       this.#opts.onRender = this.#canvasRender;
@@ -233,6 +253,7 @@ export class TagCloud {
 
   destroy(): void {
     cancelAnimationFrame(this.#raf);
+    this.#resizeObserver?.disconnect();
     const h = this.#handlers;
     this.#container.removeEventListener("pointerdown", h.down);
     window.removeEventListener("pointermove", h.move);
@@ -527,9 +548,8 @@ export class TagCloud {
   }
 
   #tick(): void {
-    const rect = this.#container.getBoundingClientRect();
-    const cx = rect.width / 2;
-    const cy = rect.height / 2;
+    const cx = this.#cx;
+    const cy = this.#cy;
 
     // 自旋 + 惯性
     const revY = this.#opts.reverse || this.#opts.reverseY ? -1 : 1;

@@ -21,7 +21,6 @@ const toImg = (name: string, url: string) => ({
 
 const logoImages = [
   toImg("typescript", "https://www.typescriptlang.org/"),
-  toImg("rust", "https://www.rust-lang.org/"),
   toImg("bun", "https://bun.sh/"),
   toImg("react", "https://react.dev/"),
   toImg("vue", "https://vuejs.org/"),
@@ -31,15 +30,19 @@ const logoImages = [
   toImg("postgresql", "https://www.postgresql.org/"),
   toImg("redis", "https://redis.io/"),
   toImg("vite", "https://vite.dev/"),
-  toImg("deno", "https://deno.com/"),
-  toImg("astro", "https://astro.build/"),
   toImg("nodejs", "https://nodejs.org/"),
   toImg("git", "https://git-scm.com/"),
-  toImg("github", "https://github.com/"),
   toImg("sqlite", "https://www.sqlite.org/"),
   toImg("zig", "https://ziglang.org/"),
-  toImg("webassembly", "https://webassembly.org/"),
   toImg("webrtc", "https://webrtc.org/"),
+];
+
+// 暗色 logo 改用 link 文本（白字暗底清晰可见）
+const darkLogoLinks = [
+  { type: "link" as const, text: "GitHub", url: "https://github.com/" },
+  { type: "link" as const, text: "Astro", url: "https://astro.build/" },
+  { type: "link" as const, text: "Rust", url: "https://www.rust-lang.org/" },
+  { type: "link" as const, text: "Deno", url: "https://deno.com/" },
 ];
 
 // 文字链接
@@ -105,6 +108,8 @@ const cloud = new TagCloud(document.getElementById("cloud")!, {
       width: 120,
       height: 68,
     },
+    // 暗色 Logo 文本
+    ...darkLogoLinks,
     // 文字链接
     ...linkItems,
     // 纯文本

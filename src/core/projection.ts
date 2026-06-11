@@ -39,10 +39,10 @@ export interface ProjectedTag {
  * @param depth — 透视深度 = 2 × 球半径
  * @param depth — perspective depth = 2 × sphere radius
  */
-export function project(
+export const project = (
   points: { x: number; y: number; z: number }[],
   depth: number,
-): ProjectedTag[] {
+): ProjectedTag[] => {
   const d2 = 2 * depth;
   return points.map((p) => {
     // 透视缩放
@@ -53,4 +53,4 @@ export function project(
     const alpha = Math.min(1, Math.max(0, per * per - 0.25));
     return { x: p.x, y: p.y, z: p.z, scale: per, alpha };
   });
-}
+};

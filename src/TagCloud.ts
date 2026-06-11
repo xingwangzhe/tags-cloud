@@ -161,9 +161,9 @@ const DEFAULTS: Omit<ResolvedOptions, "tags" | "onRender"> = {
 };
 
 /** 判断是否为对象类型的标签 */
-function isObjectTag(item: TagItem): item is Exclude<TagItem, string> {
+const isObjectTag = (item: TagItem): item is Exclude<TagItem, string> => {
   return typeof item !== "string";
-}
+};
 
 // ── 主类
 // ── Main Class
@@ -251,15 +251,21 @@ export class TagCloud {
   // ── Public API
 
   setTags(tags: TagItem[]): void {
-    if (this.#destroyed) return;
+    if (this.#destroyed) {
+      return;
+    }
     this.#initTags(tags);
   }
   pause(): void {
-    if (this.#destroyed) return;
+    if (this.#destroyed) {
+      return;
+    }
     this.#paused = true;
   }
   resume(): void {
-    if (this.#destroyed) return;
+    if (this.#destroyed) {
+      return;
+    }
     this.#paused = false;
   }
 
@@ -283,8 +289,12 @@ export class TagCloud {
     }
     // 清理 DOM overlay 元素 / cleanup DOM overlay elements
     this.#cleanupDomEls();
-    if (this.#canvas) this.#canvas.remove();
-    if (this.#overlay) this.#overlay.remove();
+    if (this.#canvas) {
+      this.#canvas.remove();
+    }
+    if (this.#overlay) {
+      this.#overlay.remove();
+    }
     // 释放引用 / release references
     this.#lastCanvasTags = [];
     this.#textCache.clear();
@@ -326,7 +336,9 @@ export class TagCloud {
         this.#velX = 0;
       }) as EventListener,
       move: ((e: PointerEvent) => {
-        if (!this.#dragging) return;
+        if (!this.#dragging) {
+          return;
+        }
         this.#dragged = true;
         const r = rect();
         const vCur = this.#screenToSphere(e.clientX - r.left, e.clientY - r.top, r.width, r.height);
@@ -374,13 +386,17 @@ export class TagCloud {
   #bindClicks(): void {
     this.#clickHandler = (e: Event) => {
       const ce = e as MouseEvent;
-      if (this.#dragged || this.#destroyed) return;
+      if (this.#dragged || this.#destroyed) {
+        return;
+      }
       const r = this.#container.getBoundingClientRect();
       const cx = ce.clientX - r.left;
       const cy = ce.clientY - r.top;
       let best: { item: TagItem; dist: number } | null = null;
       for (const t of this.#lastCanvasTags) {
-        if (typeof t.item !== "string" && !t.item.onClick) continue;
+        if (typeof t.item !== "string" && !t.item.onClick) {
+          continue;
+        }
         const dx = cx - t.x;
         const dy = cy - t.y;
         const d = Math.sqrt(dx * dx + dy * dy);
@@ -392,8 +408,12 @@ export class TagCloud {
       }
       if (best) {
         const item = best.item;
-        if (isObjectTag(item) && item.onClick) item.onClick();
-        if (this.#opts.onTagClick) this.#opts.onTagClick(item);
+        if (isObjectTag(item) && item.onClick) {
+          item.onClick();
+        }
+        if (this.#opts.onTagClick) {
+          this.#opts.onTagClick(item);
+        }
       }
     };
     this.#container.addEventListener("click", this.#clickHandler!);
@@ -423,11 +443,15 @@ export class TagCloud {
       if (this.#opts.width) {
         c.style.width = `${this.#opts.width}px`;
         this.#container.style.width = `${this.#opts.width}px`;
-      } else c.style.width = "100%";
+      } else {
+        c.style.width = "100%";
+      }
       if (this.#opts.height) {
         c.style.height = `${this.#opts.height}px`;
         this.#container.style.height = `${this.#opts.height}px`;
-      } else c.style.height = "100%";
+      } else {
+        c.style.height = "100%";
+      }
       this.#container.appendChild(c);
       this.#canvas = c;
       this.#ctx = c.getContext("2d")!;
@@ -538,10 +562,13 @@ export class TagCloud {
     const clickable = !!(item.onClick || (item.type === "video" && this.#opts.videoFullscreen));
     el.style.cursor = clickable ? "pointer" : "default";
     el.style.pointerEvents = clickable ? "auto" : "none";
-    if (item.type === "element") el.appendChild(item.element);
-    else if (item.type === "html") el.innerHTML = item.html;
-    else if (item.type === "svg") el.innerHTML = item.content;
-    else if (item.type === "video") {
+    if (item.type === "element") {
+      el.appendChild(item.element);
+    } else if (item.type === "html") {
+      el.innerHTML = item.html;
+    } else if (item.type === "svg") {
+      el.innerHTML = item.content;
+    } else if (item.type === "video") {
       el.innerHTML = `<video src="${item.src}" width="${item.width}" height="${item.height}" autoplay muted loop playsinline></video>`;
       if (this.#opts.videoFullscreen) {
         el.addEventListener("click", () => {
@@ -558,8 +585,12 @@ export class TagCloud {
     if (item.onClick || this.#opts.onTagClick) {
       el.addEventListener("click", (e) => {
         e.stopPropagation();
-        if (item.onClick) item.onClick();
-        if (this.#opts.onTagClick) this.#opts.onTagClick(item);
+        if (item.onClick) {
+          item.onClick();
+        }
+        if (this.#opts.onTagClick) {
+          this.#opts.onTagClick(item);
+        }
       });
     }
     return el;
@@ -576,7 +607,9 @@ export class TagCloud {
 
   #resizeCanvas(): void {
     const c = this.#canvas;
-    if (!c) return;
+    if (!c) {
+      return;
+    }
     const dpr = window.devicePixelRatio || 1;
     const { width, height } = c.getBoundingClientRect();
     c.width = width * dpr;
@@ -585,8 +618,12 @@ export class TagCloud {
   }
 
   #loop = (): void => {
-    if (this.#destroyed) return;
-    if (!this.#paused) this.#tick();
+    if (this.#destroyed) {
+      return;
+    }
+    if (!this.#paused) {
+      this.#tick();
+    }
     this.#raf = requestAnimationFrame(this.#loop);
   };
 
@@ -628,8 +665,12 @@ export class TagCloud {
       this.#velY *= decay;
       this.#velX *= decay;
       // 惯性死区：速度衰减到阈值以下直接归零，消除"永不停息"的微抖
-      if (Math.abs(this.#velY) < 1e-4) this.#velY = 0;
-      if (Math.abs(this.#velX) < 1e-4) this.#velX = 0;
+      if (Math.abs(this.#velY) < 1e-4) {
+        this.#velY = 0;
+      }
+      if (Math.abs(this.#velX) < 1e-4) {
+        this.#velX = 0;
+      }
     }
 
     // 四元数构造旋转矩阵
@@ -668,7 +709,7 @@ export class TagCloud {
       });
     }
 
-    this.#opts.onRender(projected.sort((a, b) => b.z - a.z));
+    this.#opts.onRender(projected.toSorted((a, b) => b.z - a.z));
   }
 }
 

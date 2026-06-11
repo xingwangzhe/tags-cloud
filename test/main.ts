@@ -1,25 +1,40 @@
 import { TagCloud } from "../src/index.ts";
 
+// ── 响应式断点常量 / Responsive breakpoint constants
+const MOBILE_BREAKPOINT = 768;
+const MOBILE_RADIUS = 220;
+const DESKTOP_RADIUS = 320;
+const MOBILE_SPIN = 0.1;
+const DESKTOP_SPIN = 0.15;
+const MOBILE_HEIGHT = 400;
+const MOBILE_PADDING = 32;
+
+const isMobile = innerWidth < MOBILE_BREAKPOINT;
+
 // ── 多模态标签云 ──
-new TagCloud(document.getElementById("cloud")!, {
+const cloud = new TagCloud(document.getElementById("cloud")!, {
   tags: [
     {
-      type: "html",
       html: '<div style="display:inline-flex;align-items:center;gap:10px;padding:6px 14px 6px 6px;border-radius:99px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);white-space:nowrap;cursor:pointer"><img src="https://xingwangzhe.fun/avatar.webp" width="32" height="32" style="border-radius:50%" alt="xingwangzhe" /><span style="font-weight:600;font-size:13px;color:#fff">xingwangzhe</span><span style="font-size:11px;color:rgba(255,255,255,0.5)">@GitHub</span></div>',
-      onClick: () => window.open("https://github.com/xingwangzhe", "_blank"),
+      type: "html",
+      onClick: () => {
+        window.open("https://github.com/xingwangzhe", "_blank");
+      },
     },
     {
-      type: "image",
-      src: "https://xingwangzhe.fun/avatar.webp",
-      width: 40,
       height: 40,
-      onClick: () => window.open("https://github.com/xingwangzhe", "_blank"),
+      src: "https://xingwangzhe.fun/avatar.webp",
+      type: "image",
+      width: 40,
+      onClick: () => {
+        window.open("https://github.com/xingwangzhe", "_blank");
+      },
     },
     {
-      type: "video",
-      src: "https://clipqr.needhelp.icu/%E6%BC%94%E7%A4%BA%E8%A7%86%E9%A2%91.mp4",
-      width: 120,
       height: 68,
+      src: "https://clipqr.needhelp.icu/%E6%BC%94%E7%A4%BA%E8%A7%86%E9%A2%91.mp4",
+      type: "video",
+      width: 120,
     },
     "TypeScript",
     "Canvas",
@@ -65,6 +80,7 @@ new TagCloud(document.getElementById("cloud")!, {
     "Stalux",
     "xingwangzhe",
   ],
+  height: isMobile ? MOBILE_HEIGHT : 0,
   onTagClick(item) {
     const urls: Record<string, string> = {
       TypeScript: "https://www.typescriptlang.org/",
@@ -105,10 +121,14 @@ new TagCloud(document.getElementById("cloud")!, {
       xingwangzhe: "https://xingwangzhe.fun",
     };
     const name = typeof item === "string" ? item : "";
-    if (urls[name]) window.open(urls[name], "_blank");
+    if (urls[name]) {
+      window.open(urls[name], "_blank");
+    }
   },
-  radius: innerWidth < 768 ? 220 : 320,
-  spinY: innerWidth < 768 ? 0.1 : 0.15,
-  width: innerWidth < 768 ? innerWidth - 32 : 0,
-  height: innerWidth < 768 ? 400 : 0,
+  radius: isMobile ? MOBILE_RADIUS : DESKTOP_RADIUS,
+  spinY: isMobile ? MOBILE_SPIN : DESKTOP_SPIN,
+  width: isMobile ? innerWidth - MOBILE_PADDING : 0,
 });
+
+// 持有引用，避免被 GC 回收 / keep reference to prevent GC
+void cloud;

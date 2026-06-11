@@ -1,14 +1,14 @@
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  publicDir: false,
   base: "./",
   build: {
-    outDir: "out",
     minify: true,
-    sourcemap: false,
+    outDir: "out",
     rollupOptions: {
       input: "index.html",
     },
+    sourcemap: false,
   },
+  publicDir: false,
 });

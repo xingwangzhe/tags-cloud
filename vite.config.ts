@@ -4,9 +4,9 @@ export default defineConfig({
   build: {
     lib: {
       entry: "src/index.ts",
-      name: "TagsCloud",
-      formats: ["es"],
       fileName: () => "index.js",
+      formats: ["es"],
+      name: "TagsCloud",
     },
     sourcemap: true,
   },

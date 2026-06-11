@@ -1,3 +1,4 @@
+// oxlint-disable import/no-named-export
 /**
  * @xingwangzhe/tags-cloud
  *

@@ -1,0 +1,26 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "indent": {
+    "style": "space",
+    "width": 2
+  },
+  "lineWidth": 100,
+  "semicolons": "always",
+  "trailingCommas": "all",
+  "quoteStyle": "double",
+  "jsxQuoteStyle": "double",
+  "quoteProperties": "asNeeded",
+  "bracketSpacing": true,
+  "arrowParentheses": "always",
+  "ignorePatterns": [
+    "dist",
+    "out",
+    "node_modules",
+    "vendor",
+    "*.min.js",
+    "*.min.css",
+    "pnpm-lock.yaml",
+    "bun.lock",
+    "package-lock.json"
+  ]
+}

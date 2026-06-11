@@ -21,7 +21,7 @@ import type { Vec3 } from "./distribution";
  * @param b - 绕 X 轴的旋转角（弧度）
  * @param b - X-axis rotation angle (radians)
  */
-export function rotatePoint(p: Vec3, a: number, b: number): Vec3 {
+const _rotatePoint = (p: Vec3, a: number, b: number): Vec3 => {
   const sinA = Math.sin(a);
   const cosA = Math.cos(a);
   const sinB = Math.sin(b);
@@ -38,13 +38,13 @@ export function rotatePoint(p: Vec3, a: number, b: number): Vec3 {
   const z2 = z1 * cosB - p.x * sinB;
 
   return { x: x2, y: y1, z: z2 };
-}
+};
 
 /**
  * 批量旋转所有点
  * Rotate all points in batch
  */
-export function rotatePoints(points: Vec3[], a: number, b: number): Vec3[] {
+const _rotatePoints = (points: Vec3[], a: number, b: number): Vec3[] => {
   const sinA = Math.sin(a);
   const cosA = Math.cos(a);
   const sinB = Math.sin(b);
@@ -56,4 +56,6 @@ export function rotatePoints(points: Vec3[], a: number, b: number): Vec3[] {
     const x2 = p.x * cosB + z1 * sinB;
     return { x: x2, y: y1, z: z1 * cosB - p.x * sinB };
   });
-}
+};
+
+export { _rotatePoint as rotatePoint, _rotatePoints as rotatePoints };

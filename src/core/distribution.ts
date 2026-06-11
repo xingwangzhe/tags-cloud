@@ -18,7 +18,7 @@ export interface Vec3 {
  * 生成球面上均匀分布的 N 个点
  * Generate N evenly distributed points on a sphere of radius R
  */
-export function fibonacciSphere(n: number, R: number): Vec3[] {
+export const fibonacciSphere = (n: number, R: number): Vec3[] => {
   const points: Vec3[] = [];
   for (let i = 0; i < n; i++) {
     // φ = acos(1 - 2(i+0.5)/N) — 纬度均匀分布
@@ -34,4 +34,4 @@ export function fibonacciSphere(n: number, R: number): Vec3[] {
     });
   }
   return points;
-}
+};

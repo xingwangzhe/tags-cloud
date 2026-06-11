@@ -141,7 +141,7 @@ interface SpherePoint {
   item: TagItem;
 }
 
-type ResolvedOptions = TagCloudOptions & Required<Omit<TagCloudOptions, "onRender">>;
+type ResolvedOptions = TagCloudOptions & Required<Omit<TagCloudOptions, "onRender" | "onTagClick">>;
 
 const DEFAULTS: Omit<ResolvedOptions, "tags" | "onRender"> = {
   radius: 300,
@@ -400,7 +400,7 @@ export class TagCloud {
         const dx = cx - t.x;
         const dy = cy - t.y;
         const d = Math.sqrt(dx * dx + dy * dy);
-        const rw = t.item.type === "image" ? t.item.width / 2 : 30;
+        const rw = isObjectTag(t.item) && t.item.type === "image" ? t.item.width / 2 : 30;
         const hitRadius = rw * t.scale;
         if (d < hitRadius && (!best || d < best.dist)) {
           best = { item: t.item, dist: d };
@@ -733,7 +733,7 @@ export class TagCloud {
       projected[k + 1] = cur;
     }
 
-    this.#opts.onRender(projected);
+    this.#opts.onRender!(projected);
   }
 }
 

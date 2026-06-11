@@ -180,10 +180,12 @@ export class TagCloud {
   #velY = 0;
   #velX = 0;
   #paused = false;
+  #destroyed = false;
 
   // 拖拽状态
   #dragging = false;
   #dragged = false;
+  #dragTimer = 0;
   #vDown = { x: 0, y: 0, z: 0 };
 
   // 容器中心（缓存，避免逐帧 getBoundingClientRect 亚像素波动导致纵向卡顿）
@@ -195,6 +197,7 @@ export class TagCloud {
   #container: HTMLElement;
   #resizeObserver?: ResizeObserver;
   #handlers!: { down: EventListener; move: EventListener; up: EventListener };
+  #clickHandler?: EventListener;
 
   // 内置 Canvas
   #canvas?: HTMLCanvasElement;
@@ -248,24 +251,44 @@ export class TagCloud {
   // ── Public API
 
   setTags(tags: TagItem[]): void {
+    if (this.#destroyed) return;
     this.#initTags(tags);
   }
   pause(): void {
+    if (this.#destroyed) return;
     this.#paused = true;
   }
   resume(): void {
+    if (this.#destroyed) return;
     this.#paused = false;
   }
 
   destroy(): void {
+    this.#destroyed = true;
     cancelAnimationFrame(this.#raf);
+    // 取消拖拽定时器 / cancel drag timer
+    if (this.#dragTimer) {
+      clearTimeout(this.#dragTimer);
+      this.#dragTimer = 0;
+    }
     this.#resizeObserver?.disconnect();
     const h = this.#handlers;
     this.#container.removeEventListener("pointerdown", h.down);
     window.removeEventListener("pointermove", h.move);
     window.removeEventListener("pointerup", h.up);
+    // 移除 click 事件 / remove click listener
+    if (this.#clickHandler) {
+      this.#container.removeEventListener("click", this.#clickHandler);
+      this.#clickHandler = undefined;
+    }
+    // 清理 DOM overlay 元素 / cleanup DOM overlay elements
+    this.#cleanupDomEls();
     if (this.#canvas) this.#canvas.remove();
     if (this.#overlay) this.#overlay.remove();
+    // 释放引用 / release references
+    this.#lastCanvasTags = [];
+    this.#textCache.clear();
+    this.#imageCache.clear();
   }
 
   // ── 内部方法
@@ -275,7 +298,9 @@ export class TagCloud {
     const size = 1.5 * this.#radius;
     const positions = fibonacciSphere(tags.length, size / 2);
     this.#points = positions.map((p, i) => ({ ...p, item: tags[i]! }));
-    // 清理图片缓存，确保新标签的图片能正确加载
+    // 立即清理旧 DOM 元素，避免 setTags() → destroy() 间隔内泄漏
+    this.#cleanupDomEls();
+    // 清理缓存，确保新标签的资源能正确加载
     this.#imageCache.clear();
     this.#textCache.clear();
   }
@@ -335,7 +360,7 @@ export class TagCloud {
       up: () => {
         this.#dragging = false;
         this.#container.style.cursor = "grab";
-        setTimeout(() => { this.#dragged = false; }, 0);
+        this.#dragTimer = window.setTimeout(() => { this.#dragged = false; }, 0);
       },
     };
 
@@ -345,11 +370,12 @@ export class TagCloud {
   }
 
   #bindClicks(): void {
-    this.#container.addEventListener("click", (e) => {
-      if (this.#dragged) return;
+    this.#clickHandler = (e: Event) => {
+      const ce = e as MouseEvent;
+      if (this.#dragged || this.#destroyed) return;
       const r = this.#container.getBoundingClientRect();
-      const cx = e.clientX - r.left;
-      const cy = e.clientY - r.top;
+      const cx = ce.clientX - r.left;
+      const cy = ce.clientY - r.top;
       let best: { item: TagItem; dist: number } | null = null;
       for (const t of this.#lastCanvasTags) {
         if (typeof t.item !== "string" && !t.item.onClick) continue;
@@ -367,7 +393,8 @@ export class TagCloud {
         if (isObjectTag(item) && item.onClick) item.onClick();
         if (this.#opts.onTagClick) this.#opts.onTagClick(item);
       }
-    });
+    };
+    this.#container.addEventListener("click", this.#clickHandler!);
   }
 
   /** 屏幕坐标 → 球面 3D 点 */
@@ -528,6 +555,15 @@ export class TagCloud {
     return el;
   }
 
+  /** 清理所有 DOM overlay 元素（移除节点 + 清空 Map） */
+  /** remove all DOM overlay elements and clear the Map */
+  #cleanupDomEls(): void {
+    for (const [, el] of this.#domEls) {
+      el.remove();
+    }
+    this.#domEls.clear();
+  }
+
   #resizeCanvas(): void {
     const c = this.#canvas;
     if (!c) return;
@@ -539,6 +575,7 @@ export class TagCloud {
   }
 
   #loop = (): void => {
+    if (this.#destroyed) return;
     if (!this.#paused) this.#tick();
     this.#raf = requestAnimationFrame(this.#loop);
   };

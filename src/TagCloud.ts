@@ -207,6 +207,9 @@ export class TagCloud {
   // 点击：存储上一帧的 Canvas 标签投影坐标，供 raycast 查找
   #lastCanvasTags: { item: TagItem; x: number; y: number; scale: number }[] = [];
 
+  // 文本离屏缓存 — 预渲染文本到位图，避免每帧 ctx.font 变化导致字体重光栅化微颤
+  #textCache: Map<string, HTMLCanvasElement> = new Map();
+
   constructor(container: HTMLElement, options: TagCloudOptions) {
     this.#container = container;
     this.#opts = { ...DEFAULTS, ...options } as ResolvedOptions;
@@ -416,15 +419,35 @@ export class TagCloud {
 
     for (const t of tags) {
       if (typeof t.item === "string") {
-        // 文本标签
+        // 文本标签 — 离屏预渲染 + drawImage 缩放，避免逐帧 fillText 字体重光栅化
         const { fontFamily, fontSize, color } = this.#opts;
+        const baseFs = fontSize + 8; // 略大于最大可能字号，保证缩放质量
+        const cacheKey = `${t.item}|${fontFamily}|${color}`;
+        let cached = this.#textCache.get(cacheKey);
+        if (!cached) {
+          const off = document.createElement("canvas");
+          const octx = off.getContext("2d")!;
+          off.height = Math.ceil(baseFs * 1.5);
+          // 先临时设置字体以测量宽度
+          octx.font = `${baseFs}px ${fontFamily}`;
+          const m = octx.measureText(t.item);
+          off.width = Math.ceil(m.width) + 8; // 4px padding 每侧
+          // 重新设置字体（因为改变尺寸会重置 context）
+          octx.font = `${baseFs}px ${fontFamily}`;
+          octx.fillStyle = color;
+          octx.textAlign = "center";
+          octx.textBaseline = "middle";
+          octx.fillText(t.item, off.width / 2, off.height / 2);
+          cached = off;
+          this.#textCache.set(cacheKey, cached);
+        }
+        const targetFs = fontSize + t.scale * 5;
+        const ratio = targetFs / baseFs;
+        const sw = cached.width * ratio;
+        const sh = cached.height * ratio;
         ctx.save();
         ctx.globalAlpha = t.alpha;
-        ctx.font = `${fontSize + t.scale * 5}px ${fontFamily}`;
-        ctx.fillStyle = color;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(t.item, t.x, t.y);
+        ctx.drawImage(cached, t.x - sw / 2, t.y - sh / 2, sw, sh);
         ctx.restore();
         canvasTags.push({ item: t.item, x: t.x, y: t.y, scale: t.scale });
       } else if (t.item.type === "image") {

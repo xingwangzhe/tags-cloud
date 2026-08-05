@@ -13,9 +13,6 @@
       },
     },
   },
-  "overrides": {
-    "vitest/vite": "8.2.0",
-  },
   "packages": {
     "@jridgewell/sourcemap-codec": ["@jridgewell/sourcemap-codec@1.5.5", "", {}, "sha512-cYQ9310grqxueWbl+WuIUIaiUaDcj7WOq5fVhEljNVgRfOUhY9fy2zTvfoqWsnebh8Sl70VScFbICvJnLKB0Og=="],
 

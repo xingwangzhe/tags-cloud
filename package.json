@@ -52,8 +52,5 @@
   },
   "simple-git-hooks": {
     "pre-commit": "bun run lint && bun run fmt:check"
-  },
-  "overrides": {
-    "vitest/vite": "8.2.0"
   }
 }

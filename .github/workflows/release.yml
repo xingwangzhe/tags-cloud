@@ -24,10 +24,10 @@ jobs:
       id-token: write # npm Trusted Publishing OIDC
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
 
       # 构建仍用 bun（快）
-      - uses: oven-sh/setup-bun@v2
+      - uses: oven-sh/setup-bun@v2.2.0
         with:
           bun-version: latest
 
@@ -36,7 +36,7 @@ jobs:
       - run: bun run build
 
       # npm OIDC Trusted Publishing 需要 npm CLI（setup-node 自动交换 OIDC token）
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@v7.0.0
         with:
           node-version: lts/*
           registry-url: https://registry.npmjs.org
@@ -73,7 +73,7 @@ jobs:
       # 创建 GitHub Release
       - name: Create GitHub Release
         if: inputs.dry-run != true
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@v3.0.2
         with:
           tag_name: v${{ steps.version.outputs.version }}
           generate_release_notes: true
